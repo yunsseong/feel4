@@ -99,6 +99,16 @@ export function TypingArea({ initialContent = "태초에 하나님이 천지를 
         const val = e.target.value;
         if (!startTime) setStartTime(Date.now());
         setInput(val);
+
+        // 조합 중이 아닐 때 완료 체크 (영문, 숫자, 공백 등)
+        if (!isComposing && val === targetText) {
+            if (onComplete && startTime) {
+                const endTime = Date.now();
+                const durationMin = (endTime - startTime) / 60000;
+                const cpm = Math.round(targetText.length / durationMin);
+                onComplete({ cpm, accuracy: 100 });
+            }
+        }
     };
 
     const handleCompositionStart = () => {
@@ -132,6 +142,19 @@ export function TypingArea({ initialContent = "태초에 하나님이 천지를 
         }
     };
 
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        // 마지막 글자까지 입력 완료 후 스페이스바나 엔터 누르면 다음으로
+        if ((e.key === " " || e.key === "Enter") && input === targetText) {
+            e.preventDefault();
+            if (onComplete && startTime) {
+                const endTime = Date.now();
+                const durationMin = (endTime - startTime) / 60000;
+                const cpm = Math.round(targetText.length / durationMin);
+                onComplete({ cpm, accuracy: 100 });
+            }
+        }
+    };
+
     // Calculate correctness for styling
     const getCharClass = (index: number) => {
         // 아직 입력 안 된 문자
@@ -153,26 +176,49 @@ export function TypingArea({ initialContent = "태초에 하나님이 천지를 
 
     return (
         <div className={cn("flex flex-col items-center justify-center w-full max-w-3xl p-8 space-y-8", shake && "animate-shake")} onClick={() => inputRef.current?.focus()}>
+            {/* 텍스트 컨테이너 */}
             <div
                 ref={containerRef}
                 className="relative w-full text-3xl md:text-4xl lg:text-5xl font-serif leading-relaxed tracking-wide text-center break-keep"
             >
-                {targetText.split("").map((char, index) => (
-                    <span
-                        key={index}
-                        ref={(el) => {
-                            charRefs.current[index] = el;
-                            // 마지막 문자가 설정되면 refsReady 트리거
-                            if (index === targetText.length - 1 && el && !refsReady) {
-                                setRefsReady(true);
-                            }
-                        }}
-                        className={cn(getCharClass(index), "transition-colors duration-100")}
-                    >
-                        {char}
-                    </span>
-                ))}
-                {/* Cursor - refs 준비 후에만 표시 */}
+                {/* 각 글자를 개별적으로 렌더링 */}
+                {targetText.split("").map((targetChar, index) => {
+                    const inputChar = input[index];
+                    const isTyped = index < input.length;
+                    const isCurrentlyTyping = isComposing && index === input.length - 1;
+                    const isCorrect = inputChar === targetChar;
+
+                    // 스타일 결정
+                    let charClass = "text-gray-300"; // 기본: 아직 입력 안 됨
+                    if (isTyped) {
+                        if (isCurrentlyTyping) {
+                            // 현재 조합 중인 글자 - 검정색으로 표시 (에러 체크 안 함)
+                            charClass = "text-foreground";
+                        } else if (isCorrect) {
+                            // 완료된 글자 - 맞음
+                            charClass = "text-foreground";
+                        } else {
+                            // 완료된 글자 - 틀림
+                            charClass = "text-red-500 bg-red-100";
+                        }
+                    }
+
+                    return (
+                        <span
+                            key={index}
+                            ref={(el) => {
+                                charRefs.current[index] = el;
+                                if (index === targetText.length - 1 && el && !refsReady) {
+                                    setRefsReady(true);
+                                }
+                            }}
+                            className={cn("transition-colors duration-100", charClass)}
+                        >
+                            {isTyped ? inputChar : targetChar}
+                        </span>
+                    );
+                })}
+                {/* 커서 */}
                 {cursorStyle && (
                     <span
                         className="absolute w-0.5 h-[1.2em] bg-blue-500 animate-pulse"
@@ -189,6 +235,7 @@ export function TypingArea({ initialContent = "태초에 하나님이 천지를 
                 type="text"
                 value={input}
                 onChange={handleChange}
+                onKeyDown={handleKeyDown}
                 onCompositionStart={handleCompositionStart}
                 onCompositionEnd={handleCompositionEnd}
                 className="absolute opacity-0 w-full h-full cursor-default"
@@ -196,7 +243,7 @@ export function TypingArea({ initialContent = "태초에 하나님이 천지를 
             />
 
             <div className="text-sm text-muted-foreground mt-8">
-                Start typing to feel the flow.
+                {input.length} / {targetText.length}
             </div>
         </div>
     );
