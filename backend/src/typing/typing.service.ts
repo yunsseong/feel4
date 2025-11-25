@@ -26,7 +26,7 @@ export class TypingService {
             // Since TypingProgress.userId is PK and FK, we can just save it.
             progress = this.progressRepository.create({
                 userId: user.userId,
-                bibleBook: 'Genesis',
+                bibleBook: '창세기',
                 chapter: 1,
                 verse: 1,
             });
