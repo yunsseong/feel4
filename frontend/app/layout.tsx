@@ -7,8 +7,23 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 const gowunBatang = Gowun_Batang({ weight: ["400", "700"], subsets: ["latin"], variable: "--font-serif" });
 
 export const metadata: Metadata = {
-  title: "Feel4 - 필사의 감동",
+  title: "필사",
   description: "소설, 시, 수필, 성경을 필사하며 느끼는 감동",
+  icons: {
+    icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌸</text></svg>",
+  },
+  openGraph: {
+    title: "필사",
+    description: "소설, 시, 수필, 성경을 필사하며 느끼는 감동",
+    siteName: "필사",
+    locale: "ko_KR",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "필사",
+    description: "소설, 시, 수필, 성경을 필사하며 느끼는 감동",
+  },
 };
 
 export default function RootLayout({

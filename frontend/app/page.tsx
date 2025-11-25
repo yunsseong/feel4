@@ -5,7 +5,7 @@ export default function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-4 sm:p-24 relative overflow-hidden">
       <div className="z-10 w-full items-center justify-between font-mono text-sm flex absolute top-8 left-0 right-0 px-8">
-        <div className="font-bold text-2xl tracking-tighter">Feel4</div>
+        <div className="font-bold text-2xl tracking-tighter">필사</div>
         <Link
           className="font-medium hover:underline underline-offset-4"
           href="/login"

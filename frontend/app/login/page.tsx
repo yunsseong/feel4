@@ -22,7 +22,7 @@ function LoginContent() {
     const handleLogin = () => {
         setLoading(true);
         // Redirect to backend auth
-        window.location.href = "http://localhost:3201/auth/google";
+        window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
     };
 
     return (

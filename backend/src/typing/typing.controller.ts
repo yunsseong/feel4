@@ -4,13 +4,13 @@ import { TypingService } from './typing.service';
 import { ContentType } from './content.entity';
 
 @Controller('typing')
-@UseGuards(AuthGuard('jwt'))
 export class TypingController {
     constructor(private readonly typingService: TypingService) { }
 
     @Get('content')
     async getContent(@Req() req, @Query('type') contentType?: ContentType) {
-        return this.typingService.getContent(req.user, contentType);
+        // 비로그인 사용자는 기본 콘텐츠 제공
+        return this.typingService.getContent(req.user || null, contentType);
     }
 
     @Get('content/list')
@@ -28,9 +28,11 @@ export class TypingController {
             section?: number;
         }
     ) {
-        return this.typingService.setContent(req.user, body);
+        // 비로그인 사용자도 작품 선택 가능
+        return this.typingService.setContent(req.user || null, body);
     }
 
+    @UseGuards(AuthGuard('jwt'))
     @Post('submit')
     async submit(
         @Req() req,

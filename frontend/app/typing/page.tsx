@@ -41,22 +41,17 @@ export default function TypingPage() {
 
     const fetchContent = async (contentType?: ContentType) => {
         const token = localStorage.getItem("accessToken");
-        if (!token) {
-            router.push("/login");
-            return;
-        }
 
         try {
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL;
             const url = contentType
-                ? `http://localhost:3201/typing/content?type=${contentType}`
-                : "http://localhost:3201/typing/content";
-            const res = await fetch(url, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            if (res.status === 401) {
-                router.push("/login");
-                return;
+                ? `${apiUrl}/typing/content?type=${contentType}`
+                : `${apiUrl}/typing/content`;
+            const headers: Record<string, string> = {};
+            if (token) {
+                headers["Authorization"] = `Bearer ${token}`;
             }
+            const res = await fetch(url, { headers });
             const data = await res.json();
             setContent(data);
             setSelectedType(data.contentType);
@@ -68,11 +63,8 @@ export default function TypingPage() {
     };
 
     const fetchWorks = async (contentType: ContentType) => {
-        const token = localStorage.getItem("accessToken");
         try {
-            const res = await fetch(`http://localhost:3201/typing/content/list?type=${contentType}`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/typing/content/list?type=${contentType}`);
             const data = await res.json();
             setWorks(data);
         } catch (err) {
@@ -81,13 +73,11 @@ export default function TypingPage() {
     };
 
     const selectWork = async (work: Work) => {
-        const token = localStorage.getItem("accessToken");
         try {
-            const res = await fetch("http://localhost:3201/typing/content/set", {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/typing/content/set`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
                 },
                 body: JSON.stringify({
                     contentType: selectedType,
@@ -117,27 +107,30 @@ export default function TypingPage() {
         if (!content) return;
         const token = localStorage.getItem("accessToken");
 
-        try {
-            await fetch("http://localhost:3201/typing/submit", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({
-                    contentType: content.contentType,
-                    workTitle: content.workTitle,
-                    chapter: content.chapter,
-                    section: content.section,
-                    cpm: stats.cpm,
-                    accuracy: stats.accuracy,
-                }),
-            });
-            // Fetch next content
-            fetchContent();
-        } catch (err) {
-            console.error("Failed to submit", err);
+        // 로그인한 사용자만 진행 저장
+        if (token) {
+            try {
+                await fetch(`${process.env.NEXT_PUBLIC_API_URL}/typing/submit`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({
+                        contentType: content.contentType,
+                        workTitle: content.workTitle,
+                        chapter: content.chapter,
+                        section: content.section,
+                        cpm: stats.cpm,
+                        accuracy: stats.accuracy,
+                    }),
+                });
+            } catch (err) {
+                console.error("Failed to submit", err);
+            }
         }
+        // 다음 콘텐츠 가져오기
+        fetchContent();
     };
 
     if (loading) return <div className="flex min-h-screen items-center justify-center">Loading...</div>;
