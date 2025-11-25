@@ -1,5 +1,5 @@
 {
-  "name": "backend",
+  "name": "feel4-backend",
   "version": "0.0.1",
   "description": "",
   "author": "",
@@ -18,7 +18,8 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "seed:bible": "ts-node src/scripts/seed-bible.ts"
+    "seed:bible": "ts-node src/scripts/seed-bible.ts",
+    "seed:content": "ts-node src/scripts/seed-content.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
