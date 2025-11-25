@@ -16,7 +16,7 @@ export function TypingArea({ initialContent = "태초에 하나님이 천지를 
     const inputRef = useRef<HTMLInputElement>(null);
     const charRefs = useRef<(HTMLSpanElement | null)[]>([]);
     const containerRef = useRef<HTMLDivElement>(null);
-    const [cursorStyle, setCursorStyle] = useState<{ left: number; top: number } | null>(null);
+    const [cursorStyle, setCursorStyle] = useState<{ left: number; top: number; height: number } | null>(null);
     const [refsReady, setRefsReady] = useState(false);
     const [isComposing, setIsComposing] = useState(false);
     const [confirmedInput, setConfirmedInput] = useState(""); // 조합 완료된 입력
@@ -36,6 +36,7 @@ export function TypingArea({ initialContent = "태초에 하나님이 천지를 
                 setCursorStyle({
                     left: charRect.left - containerRect.left,
                     top: charRect.top - containerRect.top,
+                    height: charRect.height,
                 });
             }
             return;
@@ -49,6 +50,7 @@ export function TypingArea({ initialContent = "태초에 하나님이 천지를 
             setCursorStyle({
                 left: charRect.left - containerRect.left,
                 top: charRect.top - containerRect.top,
+                height: charRect.height,
             });
             return;
         }
@@ -61,6 +63,7 @@ export function TypingArea({ initialContent = "태초에 하나님이 천지를 
             setCursorStyle({
                 left: charRect.right - containerRect.left,
                 top: charRect.top - containerRect.top,
+                height: charRect.height,
             });
         }
     }, [input]);
@@ -221,10 +224,11 @@ export function TypingArea({ initialContent = "태초에 하나님이 천지를 
                 {/* 커서 */}
                 {cursorStyle && (
                     <span
-                        className="absolute w-0.5 h-[1.2em] bg-blue-500 animate-pulse"
+                        className="absolute w-0.5 bg-blue-500 animate-pulse"
                         style={{
                             left: cursorStyle.left,
                             top: cursorStyle.top,
+                            height: cursorStyle.height,
                         }}
                     />
                 )}
@@ -238,7 +242,7 @@ export function TypingArea({ initialContent = "태초에 하나님이 천지를 
                 onKeyDown={handleKeyDown}
                 onCompositionStart={handleCompositionStart}
                 onCompositionEnd={handleCompositionEnd}
-                className="absolute opacity-0 w-full h-full cursor-default"
+                className="sr-only"
                 autoFocus
             />
 
