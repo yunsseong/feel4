@@ -17,7 +17,12 @@ export class TypingService {
         private statsRepository: Repository<TypingStats>,
     ) { }
 
-    async getContent(user: { userId: string; email: string }, contentType?: ContentType) {
+    async getContent(user: { userId: string; email: string } | null, contentType?: ContentType) {
+        // 비로그인 사용자: 랜덤 콘텐츠 제공
+        if (!user) {
+            return this.getRandomContent(contentType);
+        }
+
         // Get current progress or default
         let progress = await this.progressRepository.findOne({ where: { userId: user.userId } });
 
@@ -82,6 +87,44 @@ export class TypingService {
             displayReference: content.displayReference,
             author: content.author,
             cursorPos: progress.cursorPos,
+        };
+    }
+
+    private async getRandomContent(contentType?: ContentType) {
+        // 콘텐츠 타입이 지정되지 않으면 소설, 시, 수필 중 랜덤 선택
+        const randomTypes = [ContentType.NOVEL, ContentType.POEM, ContentType.ESSAY];
+        const selectedType = contentType || randomTypes[Math.floor(Math.random() * randomTypes.length)];
+
+        // 해당 타입의 랜덤 콘텐츠 가져오기
+        const content = await this.contentRepository
+            .createQueryBuilder('content')
+            .where('content.content_type = :contentType', { contentType: selectedType })
+            .orderBy('RANDOM()')
+            .getOne();
+
+        if (!content) {
+            // Fallback
+            return {
+                contentType: selectedType,
+                workTitle: '샘플',
+                chapter: 1,
+                section: 1,
+                content: '필사의 감동을 느껴보세요.',
+                displayReference: '샘플 텍스트',
+                author: null,
+                cursorPos: 0,
+            };
+        }
+
+        return {
+            contentType: content.contentType,
+            workTitle: content.workTitle,
+            chapter: content.chapter,
+            section: content.section,
+            content: content.content,
+            displayReference: content.displayReference,
+            author: content.author,
+            cursorPos: 0,
         };
     }
 
@@ -161,7 +204,7 @@ export class TypingService {
     }
 
     async setContent(
-        user: { userId: string; email: string },
+        user: { userId: string; email: string } | null,
         data: {
             contentType: ContentType;
             workTitle: string;
@@ -181,6 +224,20 @@ export class TypingService {
 
         if (!content) {
             throw new Error('Content not found');
+        }
+
+        // 비로그인 사용자는 진행 저장 없이 콘텐츠만 반환
+        if (!user) {
+            return {
+                contentType: content.contentType,
+                workTitle: content.workTitle,
+                chapter: content.chapter,
+                section: content.section,
+                content: content.content,
+                displayReference: content.displayReference,
+                author: content.author,
+                cursorPos: 0,
+            };
         }
 
         // Update or create progress
