@@ -25,7 +25,7 @@ import { Content } from './typing/content.entity';
         store: await redisStore({
           socket: {
             host: configService.get('REDIS_HOST') || 'localhost',
-            port: parseInt(configService.get('REDIS_PORT') || '6379', 10),
+            port: parseInt(configService.get('REDIS_PORT') || '6579', 10),
           },
         }),
         ttl: 60 * 1000, // 60 seconds default TTL
