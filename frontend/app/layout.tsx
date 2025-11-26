@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { Inter, Gowun_Batang } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
-const gowunBatang = Gowun_Batang({ weight: ["400", "700"], subsets: ["latin"], variable: "--font-serif" });
+// Gowun Batang은 CSS @font-face로 로드됨 (globals.css)
 
 export const metadata: Metadata = {
   title: "필사",
@@ -33,7 +33,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
-      <body className={cn(inter.variable, gowunBatang.variable, "font-sans antialiased bg-background text-foreground")}>
+      <body className={cn(inter.variable, "font-sans antialiased bg-background text-foreground")}>
         {children}
       </body>
     </html>
