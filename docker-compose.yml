@@ -1,6 +1,18 @@
 version: '3.8'
 
 services:
+  redis:
+    image: redis:7-alpine
+    container_name: feel4-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - feel4-network
+    restart: always
+    command: redis-server --appendonly yes
+
   postgres:
     image: postgres:16-alpine
     container_name: feel4-postgres
@@ -35,8 +47,11 @@ services:
       GOOGLE_CALLBACK_URL: ${GOOGLE_CALLBACK_URL:-http://localhost:3201/auth/google/callback}
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3200}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3200,http://localhost:3000}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
     depends_on:
       - postgres
+      - redis
     networks:
       - feel4-network
     volumes:
@@ -50,3 +65,4 @@ networks:
 
 volumes:
   postgres_data:
+  redis_data:

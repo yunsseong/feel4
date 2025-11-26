@@ -1,10 +1,14 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import { Content, ContentType } from './content.entity';
 import { TypingProgress } from './typing-progress.entity';
 import { TypingStats } from './typing-stats.entity';
 import { User } from '../users/user.entity';
+
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+const CONTENT_LIST_CACHE_TTL = 10 * 60 * 1000; // 10 minutes
 
 @Injectable()
 export class TypingService {
@@ -15,6 +19,8 @@ export class TypingService {
         private progressRepository: Repository<TypingProgress>,
         @InjectRepository(TypingStats)
         private statsRepository: Repository<TypingStats>,
+        @Inject(CACHE_MANAGER)
+        private cacheManager: Cache,
     ) { }
 
     async getContent(user: { userId: string; email: string } | null, contentType?: ContentType) {
@@ -48,15 +54,13 @@ export class TypingService {
             await this.progressRepository.save(progress);
         }
 
-        // Fetch content
-        const content = await this.contentRepository.findOne({
-            where: {
-                contentType: progress.contentType,
-                workTitle: progress.workTitle,
-                chapter: progress.chapter,
-                section: progress.section,
-            },
-        });
+        // Fetch content with cache
+        const content = await this.getContentByPosition(
+            progress.contentType,
+            progress.workTitle,
+            progress.chapter,
+            progress.section,
+        );
 
         if (!content) {
             // Fallback for MVP testing
@@ -82,6 +86,31 @@ export class TypingService {
             author: content.author,
             cursorPos: progress.cursorPos,
         };
+    }
+
+    // 캐싱된 콘텐츠 조회 헬퍼
+    private async getContentByPosition(
+        contentType: ContentType,
+        workTitle: string,
+        chapter: number,
+        section: number,
+    ): Promise<Content | null> {
+        const cacheKey = `content:${contentType}:${workTitle}:${chapter}:${section}`;
+
+        const cached = await this.cacheManager.get<Content>(cacheKey);
+        if (cached) {
+            return cached;
+        }
+
+        const content = await this.contentRepository.findOne({
+            where: { contentType, workTitle, chapter, section },
+        });
+
+        if (content) {
+            await this.cacheManager.set(cacheKey, content, CACHE_TTL);
+        }
+
+        return content;
     }
 
     private async getRandomFirstContent(contentType?: ContentType) {
@@ -152,6 +181,14 @@ export class TypingService {
     }
 
     async getContentList(contentType: ContentType) {
+        const cacheKey = `content_list:${contentType}`;
+
+        // Try to get from cache
+        const cached = await this.cacheManager.get(cacheKey);
+        if (cached) {
+            return cached;
+        }
+
         // Get unique work titles for a content type
         const works = await this.contentRepository
             .createQueryBuilder('content')
@@ -164,6 +201,9 @@ export class TypingService {
             .addGroupBy('content.publication_year')
             .orderBy('content.work_title', 'ASC')
             .getRawMany();
+
+        // Store in cache
+        await this.cacheManager.set(cacheKey, works, CONTENT_LIST_CACHE_TTL);
 
         return works;
     }
@@ -191,28 +231,24 @@ export class TypingService {
         // Update progress
         let progress = await this.progressRepository.findOne({ where: { userId: user.userId } });
         if (progress) {
-            // Check if next section exists in same work
-            const nextSection = await this.contentRepository.findOne({
-                where: {
-                    contentType: data.contentType,
-                    workTitle: data.workTitle,
-                    chapter: data.chapter,
-                    section: data.section + 1
-                }
-            });
+            // Check if next section exists in same work (캐싱 적용)
+            const nextSection = await this.getContentByPosition(
+                data.contentType,
+                data.workTitle,
+                data.chapter,
+                data.section + 1,
+            );
 
             if (nextSection) {
                 progress.section += 1;
             } else {
-                // Check next chapter
-                const nextChapter = await this.contentRepository.findOne({
-                    where: {
-                        contentType: data.contentType,
-                        workTitle: data.workTitle,
-                        chapter: data.chapter + 1,
-                        section: 1
-                    }
-                });
+                // Check next chapter (캐싱 적용)
+                const nextChapter = await this.getContentByPosition(
+                    data.contentType,
+                    data.workTitle,
+                    data.chapter + 1,
+                    1,
+                );
                 if (nextChapter) {
                     progress.chapter += 1;
                     progress.section = 1;
@@ -235,26 +271,22 @@ export class TypingService {
             section: number;
         }
     ) {
-        // 다음 섹션 찾기
-        let nextContent = await this.contentRepository.findOne({
-            where: {
-                contentType: data.contentType,
-                workTitle: data.workTitle,
-                chapter: data.chapter,
-                section: data.section + 1,
-            },
-        });
+        // 다음 섹션 찾기 (캐싱 적용)
+        let nextContent = await this.getContentByPosition(
+            data.contentType,
+            data.workTitle,
+            data.chapter,
+            data.section + 1,
+        );
 
         // 다음 섹션이 없으면 다음 챕터의 첫 섹션
         if (!nextContent) {
-            nextContent = await this.contentRepository.findOne({
-                where: {
-                    contentType: data.contentType,
-                    workTitle: data.workTitle,
-                    chapter: data.chapter + 1,
-                    section: 1,
-                },
-            });
+            nextContent = await this.getContentByPosition(
+                data.contentType,
+                data.workTitle,
+                data.chapter + 1,
+                1,
+            );
         }
 
         // 다음 챕터도 없으면 같은 타입의 다른 랜덤 작품 선택
@@ -271,14 +303,12 @@ export class TypingService {
 
         // 다른 작품도 없으면 현재 작품 처음으로 돌아가기 (fallback)
         if (!nextContent) {
-            nextContent = await this.contentRepository.findOne({
-                where: {
-                    contentType: data.contentType,
-                    workTitle: data.workTitle,
-                    chapter: 1,
-                    section: 1,
-                },
-            });
+            nextContent = await this.getContentByPosition(
+                data.contentType,
+                data.workTitle,
+                1,
+                1,
+            );
         }
 
         if (!nextContent) {
@@ -319,15 +349,13 @@ export class TypingService {
             section?: number;
         }
     ) {
-        // Find the content to start from
-        const content = await this.contentRepository.findOne({
-            where: {
-                contentType: data.contentType,
-                workTitle: data.workTitle,
-                chapter: data.chapter || 1,
-                section: data.section || 1,
-            },
-        });
+        // Find the content to start from (캐싱 적용)
+        const content = await this.getContentByPosition(
+            data.contentType,
+            data.workTitle,
+            data.chapter || 1,
+            data.section || 1,
+        );
 
         if (!content) {
             throw new Error('Content not found');
