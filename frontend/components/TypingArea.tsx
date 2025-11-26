@@ -102,13 +102,38 @@ export function TypingArea({ initialContent = "태초에 하나님이 천지를 
     // 공백 문자 정규화 함수: 줄바꿈 포함 모든 공백을 일반 공백으로 변환
     const normalizeSpaces = (text: string) => text.replace(/\s+/g, ' ').trim();
 
+    // iOS 스마트 따옴표를 표준 따옴표로 정규화 (Unicode escape 사용)
+    const normalizeQuotes = (char: string): string => {
+        // 스마트 큰따옴표 → 표준 큰따옴표
+        // " (U+201C), " (U+201D), „ (U+201E), « (U+00AB), » (U+00BB)
+        if (char === "\u201C" || char === "\u201D" || char === "\u201E" || char === "\u00AB" || char === "\u00BB") {
+            return '"';
+        }
+        // 스마트 작은따옴표/아포스트로피 → 표준 작은따옴표
+        // ' (U+2018), ' (U+2019), ‚ (U+201A), ‹ (U+2039), › (U+203A)
+        if (char === "\u2018" || char === "\u2019" || char === "\u201A" || char === "\u2039" || char === "\u203A") {
+            return "'";
+        }
+        return char;
+    };
+
+    // 전체 텍스트 정규화 (공백 + 따옴표)
+    const normalizeText = (text: string): string => {
+        return text
+            .replace(/\s+/g, ' ')
+            .trim()
+            .split('')
+            .map(normalizeQuotes)
+            .join('');
+    };
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const val = e.target.value;
         if (!startTime) setStartTime(Date.now());
         setInput(val);
 
-        // 조합 중이 아닐 때 완료 체크 (영문, 숫자, 공백 등)
-        if (!isComposing && normalizeSpaces(val) === normalizeSpaces(targetText)) {
+        // 조합 중이 아닐 때 완료 체크 (영문, 숫자, 공백, 따옴표 정규화)
+        if (!isComposing && normalizeText(val) === normalizeText(targetText)) {
             if (onComplete && startTime) {
                 const endTime = Date.now();
                 const durationMin = (endTime - startTime) / 60000;
@@ -138,7 +163,7 @@ export function TypingArea({ initialContent = "태초에 하나님이 천지를 
 
         setConfirmedInput(val);
 
-        if (normalizeSpaces(val) === normalizeSpaces(targetText)) {
+        if (normalizeText(val) === normalizeText(targetText)) {
             // Completed
             if (onComplete && startTime) {
                 const endTime = Date.now();
@@ -151,7 +176,7 @@ export function TypingArea({ initialContent = "태초에 하나님이 천지를 
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         // 마지막 글자까지 입력 완료 후 스페이스바나 엔터 누르면 다음으로
-        if ((e.key === " " || e.key === "Enter") && normalizeSpaces(input) === normalizeSpaces(targetText)) {
+        if ((e.key === " " || e.key === "Enter") && normalizeText(input) === normalizeText(targetText)) {
             e.preventDefault();
             if (onComplete && startTime) {
                 const endTime = Date.now();
@@ -193,9 +218,15 @@ export function TypingArea({ initialContent = "태초에 하나님이 천지를 
                     const inputChar = input[index];
                     const isTyped = index < input.length;
                     const isCurrentlyTyping = isComposing && index === input.length - 1;
-                    // 공백 문자 정규화: 모든 종류의 공백을 동일하게 취급
-                    const normalizeSpace = (char: string) => /\s/.test(char) ? ' ' : char;
-                    const isCorrect = normalizeSpace(inputChar) === normalizeSpace(targetChar);
+                    // 문자 정규화: 공백 + iOS 스마트 따옴표 처리
+                    const normalizeChar = (char: string) => {
+                        if (!char) return char;
+                        // 공백 정규화
+                        if (/\s/.test(char)) return ' ';
+                        // 따옴표 정규화
+                        return normalizeQuotes(char);
+                    };
+                    const isCorrect = normalizeChar(inputChar) === normalizeChar(targetChar);
 
                     // 스타일 결정
                     let charClass = "text-gray-300"; // 기본: 아직 입력 안 됨
@@ -209,8 +240,8 @@ export function TypingArea({ initialContent = "태초에 하나님이 천지를 
                         } else {
                             // 완료된 글자 - 틀림
                             charClass = "text-red-500 bg-red-100";
-                            // 디버그 로그
-                            console.log(`틀림 감지: index=${index}, inputChar='${inputChar}' (code=${inputChar?.charCodeAt(0)}), targetChar='${targetChar}' (code=${targetChar?.charCodeAt(0)}), isComposing=${isComposing}`);
+                            // 디버그 로그 (정규화 전후 비교)
+                            console.log(`틀림 감지: index=${index}, inputChar='${inputChar}' (U+${inputChar?.charCodeAt(0).toString(16).toUpperCase()}) → '${normalizeChar(inputChar)}', targetChar='${targetChar}' (U+${targetChar?.charCodeAt(0).toString(16).toUpperCase()}) → '${normalizeChar(targetChar)}'`);
                         }
                     }
 
