@@ -207,11 +207,11 @@ export function TypingArea({ initialContent = "태초에 하나님이 천지를 
     };
 
     return (
-        <div className={cn("flex flex-col items-center justify-center w-full max-w-3xl p-8 space-y-8", shake && "animate-shake")} onClick={() => inputRef.current?.focus()}>
+        <div className={cn("flex flex-col items-center justify-start md:justify-center w-full max-w-3xl p-4 md:p-8 pt-8 md:pt-8 space-y-4 md:space-y-8", shake && "animate-shake")} onClick={() => inputRef.current?.focus()}>
             {/* 텍스트 컨테이너 */}
             <div
                 ref={containerRef}
-                className="relative w-full text-2xl md:text-3xl lg:text-4xl font-serif leading-relaxed tracking-wide text-center break-keep"
+                className="relative w-full text-lg md:text-3xl lg:text-4xl font-serif leading-relaxed tracking-wide text-center break-keep"
             >
                 {/* 각 글자를 개별적으로 렌더링 */}
                 {targetText.split("").map((targetChar, index) => {
