@@ -9,8 +9,10 @@ interface TypingAreaProps {
 }
 
 export function TypingArea({ initialContent = "태초에 하나님이 천지를 창조하시니라", onComplete }: TypingAreaProps) {
+    // 줄바꿈을 공백으로 변환 (input 태그는 줄바꿈 입력 불가)
+    const normalizeContent = (text: string) => text.replace(/\s+/g, ' ').trim();
     const [input, setInput] = useState("");
-    const [targetText, setTargetText] = useState(initialContent);
+    const [targetText, setTargetText] = useState(normalizeContent(initialContent));
     const [startTime, setStartTime] = useState<number | null>(null);
     const [shake, setShake] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
@@ -27,17 +29,24 @@ export function TypingArea({ initialContent = "태초에 하나님이 천지를 
         const containerEl = containerRef.current;
         if (!containerEl) return;
 
+        // 커서 높이를 글자 높이의 80%로 설정하고 중앙 정렬
+        const getCursorStyle = (charRect: DOMRect, containerRect: DOMRect, useRight = false) => {
+            const cursorHeight = charRect.height * 0.8;
+            const topOffset = (charRect.height - cursorHeight) / 2;
+            return {
+                left: (useRight ? charRect.right : charRect.left) - containerRect.left,
+                top: charRect.top - containerRect.top + topOffset,
+                height: cursorHeight,
+            };
+        };
+
         // 입력 전: 첫 번째 문자 위치
         if (currentIndex === 0) {
             const firstChar = charRefs.current[0];
             if (firstChar) {
                 const containerRect = containerEl.getBoundingClientRect();
                 const charRect = firstChar.getBoundingClientRect();
-                setCursorStyle({
-                    left: charRect.left - containerRect.left,
-                    top: charRect.top - containerRect.top,
-                    height: charRect.height,
-                });
+                setCursorStyle(getCursorStyle(charRect, containerRect));
             }
             return;
         }
@@ -47,11 +56,7 @@ export function TypingArea({ initialContent = "태초에 하나님이 천지를 
         if (targetChar) {
             const containerRect = containerEl.getBoundingClientRect();
             const charRect = targetChar.getBoundingClientRect();
-            setCursorStyle({
-                left: charRect.left - containerRect.left,
-                top: charRect.top - containerRect.top,
-                height: charRect.height,
-            });
+            setCursorStyle(getCursorStyle(charRect, containerRect));
             return;
         }
 
@@ -60,16 +65,12 @@ export function TypingArea({ initialContent = "태초에 하나님이 천지를 
         if (lastChar) {
             const containerRect = containerEl.getBoundingClientRect();
             const charRect = lastChar.getBoundingClientRect();
-            setCursorStyle({
-                left: charRect.right - containerRect.left,
-                top: charRect.top - containerRect.top,
-                height: charRect.height,
-            });
+            setCursorStyle(getCursorStyle(charRect, containerRect, true));
         }
     }, [input]);
 
     useEffect(() => {
-        setTargetText(initialContent);
+        setTargetText(normalizeContent(initialContent));
         setInput("");
         setStartTime(null);
         setShake(false);
@@ -98,13 +99,16 @@ export function TypingArea({ initialContent = "태초에 하나님이 천지를 
         return () => window.removeEventListener("resize", updateCursorPosition);
     }, [updateCursorPosition]);
 
+    // 공백 문자 정규화 함수: 줄바꿈 포함 모든 공백을 일반 공백으로 변환
+    const normalizeSpaces = (text: string) => text.replace(/\s+/g, ' ').trim();
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const val = e.target.value;
         if (!startTime) setStartTime(Date.now());
         setInput(val);
 
         // 조합 중이 아닐 때 완료 체크 (영문, 숫자, 공백 등)
-        if (!isComposing && val === targetText) {
+        if (!isComposing && normalizeSpaces(val) === normalizeSpaces(targetText)) {
             if (onComplete && startTime) {
                 const endTime = Date.now();
                 const durationMin = (endTime - startTime) / 60000;
@@ -134,7 +138,7 @@ export function TypingArea({ initialContent = "태초에 하나님이 천지를 
 
         setConfirmedInput(val);
 
-        if (val === targetText) {
+        if (normalizeSpaces(val) === normalizeSpaces(targetText)) {
             // Completed
             if (onComplete && startTime) {
                 const endTime = Date.now();
@@ -147,7 +151,7 @@ export function TypingArea({ initialContent = "태초에 하나님이 천지를 
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         // 마지막 글자까지 입력 완료 후 스페이스바나 엔터 누르면 다음으로
-        if ((e.key === " " || e.key === "Enter") && input === targetText) {
+        if ((e.key === " " || e.key === "Enter") && normalizeSpaces(input) === normalizeSpaces(targetText)) {
             e.preventDefault();
             if (onComplete && startTime) {
                 const endTime = Date.now();
@@ -182,14 +186,16 @@ export function TypingArea({ initialContent = "태초에 하나님이 천지를 
             {/* 텍스트 컨테이너 */}
             <div
                 ref={containerRef}
-                className="relative w-full text-3xl md:text-4xl lg:text-5xl font-serif leading-relaxed tracking-wide text-center break-keep"
+                className="relative w-full text-2xl md:text-3xl lg:text-4xl font-serif leading-relaxed tracking-wide text-center break-keep"
             >
                 {/* 각 글자를 개별적으로 렌더링 */}
                 {targetText.split("").map((targetChar, index) => {
                     const inputChar = input[index];
                     const isTyped = index < input.length;
                     const isCurrentlyTyping = isComposing && index === input.length - 1;
-                    const isCorrect = inputChar === targetChar;
+                    // 공백 문자 정규화: 모든 종류의 공백을 동일하게 취급
+                    const normalizeSpace = (char: string) => /\s/.test(char) ? ' ' : char;
+                    const isCorrect = normalizeSpace(inputChar) === normalizeSpace(targetChar);
 
                     // 스타일 결정
                     let charClass = "text-gray-300"; // 기본: 아직 입력 안 됨
@@ -203,6 +209,8 @@ export function TypingArea({ initialContent = "태초에 하나님이 천지를 
                         } else {
                             // 완료된 글자 - 틀림
                             charClass = "text-red-500 bg-red-100";
+                            // 디버그 로그
+                            console.log(`틀림 감지: index=${index}, inputChar='${inputChar}' (code=${inputChar?.charCodeAt(0)}), targetChar='${targetChar}' (code=${targetChar?.charCodeAt(0)}), isComposing=${isComposing}`);
                         }
                     }
 

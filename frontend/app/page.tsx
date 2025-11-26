@@ -2,10 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { TypingArea } from "@/components/TypingArea";
-import Link from "next/link";
+import { Header } from "@/components/Header";
+import { ContentTypeTabs, ContentType, CONTENT_TYPE_LABELS } from "@/components/ContentTypeTabs";
 import { cn } from "@/lib/utils";
-
-type ContentType = "bible" | "novel" | "poem" | "essay";
 
 interface ContentData {
   contentType: ContentType;
@@ -24,13 +23,6 @@ interface Work {
   publicationYear: number | null;
 }
 
-const CONTENT_TYPE_LABELS: Record<ContentType, string> = {
-  bible: "성경",
-  novel: "소설",
-  poem: "시",
-  essay: "수필",
-};
-
 export default function Home() {
   const [content, setContent] = useState<ContentData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -45,6 +37,9 @@ export default function Home() {
         ? `${apiUrl}/typing/content?type=${contentType}`
         : `${apiUrl}/typing/content`;
       const res = await fetch(url);
+      if (!res.ok) {
+        throw new Error(`HTTP error: ${res.status}`);
+      }
       const data = await res.json();
       setContent(data);
       setSelectedType(data.contentType);
@@ -58,6 +53,9 @@ export default function Home() {
   const fetchWorks = async (contentType: ContentType) => {
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/typing/content/list?type=${contentType}`);
+      if (!res.ok) {
+        throw new Error(`HTTP error: ${res.status}`);
+      }
       const data = await res.json();
       setWorks(data);
     } catch (err) {
@@ -77,6 +75,9 @@ export default function Home() {
           workTitle: work.workTitle,
         }),
       });
+      if (!res.ok) {
+        throw new Error(`HTTP error: ${res.status}`);
+      }
       const data = await res.json();
       setContent(data);
       setShowWorkSelector(false);
@@ -97,44 +98,42 @@ export default function Home() {
   };
 
   const handleComplete = async () => {
-    // 다음 콘텐츠 가져오기
-    fetchContent(selectedType);
+    if (!content) return;
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/typing/content/next`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          contentType: content.contentType,
+          workTitle: content.workTitle,
+          chapter: content.chapter,
+          section: content.section,
+        }),
+      });
+      if (!res.ok) {
+        throw new Error(`HTTP error: ${res.status}`);
+      }
+      const data = await res.json();
+      setContent(data);
+    } catch (err) {
+      console.error("Failed to fetch next content", err);
+    }
   };
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-4 relative overflow-hidden">
-      {/* 헤더 */}
-      <div className="z-10 w-full items-center justify-between font-mono text-sm flex absolute top-8 left-0 right-0 px-8">
-        <div className="font-bold text-2xl tracking-tighter">필사</div>
-        <Link
-          className="font-medium hover:underline underline-offset-4"
-          href="/login"
-        >
-          로그인
-        </Link>
-      </div>
+    <main className="h-screen flex flex-col overflow-hidden">
+      {/* 헤더 영역 - 고정 높이 */}
+      <Header />
 
-      {/* 콘텐츠 타입 선택 탭 */}
-      <div className="absolute top-20 left-1/2 -translate-x-1/2 flex gap-2 bg-muted rounded-lg p-1">
-        {(Object.keys(CONTENT_TYPE_LABELS) as ContentType[]).map((type) => (
-          <button
-            key={type}
-            onClick={() => handleTypeChange(type)}
-            className={cn(
-              "px-4 py-2 text-sm rounded-md transition-colors",
-              selectedType === type
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            {CONTENT_TYPE_LABELS[type]}
-          </button>
-        ))}
-      </div>
+      {/* 콘텐츠 타입 탭 영역 - 고정 높이 */}
+      <ContentTypeTabs selectedType={selectedType} onTypeChange={handleTypeChange} />
 
-      {/* 현재 작품 정보 및 선택 버튼 */}
-      {content && (
-        <div className="absolute top-32 left-0 w-full text-center">
+      {/* 작품 정보 영역 - 고정 높이 */}
+      <div className="h-10 flex items-center justify-center shrink-0">
+        {content && (
           <button
             onClick={() => {
               fetchWorks(selectedType);
@@ -146,8 +145,25 @@ export default function Home() {
             <span className="font-medium">{content.displayReference}</span>
             <span className="ml-2 text-xs">▼</span>
           </button>
-        </div>
-      )}
+        )}
+      </div>
+
+      {/* 타이핑 영역 - 남은 공간 전체 사용 */}
+      {/* 모바일: 키보드가 올라오므로 상단 1/4 지점에 배치, 데스크톱: 중앙 */}
+      <div className="flex-1 flex items-start md:items-center justify-center min-h-0 px-4 pt-[12vh] md:pt-0">
+        {loading ? (
+          <div className="text-muted-foreground">불러오는 중...</div>
+        ) : content ? (
+          <TypingArea key={content.displayReference} initialContent={content.content} onComplete={handleComplete} />
+        ) : (
+          <div className="text-muted-foreground">콘텐츠를 불러올 수 없습니다.</div>
+        )}
+      </div>
+
+      {/* 푸터 영역 - 고정 높이 */}
+      <footer className="h-12 flex items-center justify-center shrink-0">
+        <span className="text-xs text-muted-foreground">필사의 감동을 느껴보세요.</span>
+      </footer>
 
       {/* 작품 선택 모달 */}
       {showWorkSelector && (
@@ -192,21 +208,6 @@ export default function Home() {
           </div>
         </div>
       )}
-
-      {/* 타이핑 영역 */}
-      <div className="relative flex place-items-center z-20 mt-16">
-        {loading ? (
-          <div className="text-muted-foreground">불러오는 중...</div>
-        ) : content ? (
-          <TypingArea key={content.displayReference} initialContent={content.content} onComplete={handleComplete} />
-        ) : (
-          <div className="text-muted-foreground">콘텐츠를 불러올 수 없습니다.</div>
-        )}
-      </div>
-
-      <div className="absolute bottom-8 text-xs text-muted-foreground">
-        필사의 감동을 느껴보세요.
-      </div>
     </main>
   );
 }

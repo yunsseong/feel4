@@ -17,3 +17,6 @@
 
 # Logs
 *.log
+
+# Content files
+content/

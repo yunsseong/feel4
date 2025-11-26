@@ -27,31 +27,25 @@ export class TypingService {
         let progress = await this.progressRepository.findOne({ where: { userId: user.userId } });
 
         if (!progress) {
-            // Create default progress - start with Bible Genesis 1:1
+            // 신규 사용자: 랜덤 작품의 첫 문단으로 시작
+            const randomContent = await this.getRandomFirstContent(contentType);
             progress = this.progressRepository.create({
                 userId: user.userId,
-                contentType: contentType || ContentType.BIBLE,
-                workTitle: contentType === ContentType.POEM ? '진달래꽃' :
-                          contentType === ContentType.NOVEL ? '운수 좋은 날' : '창세기',
+                contentType: randomContent.contentType,
+                workTitle: randomContent.workTitle,
                 chapter: 1,
                 section: 1,
             });
             await this.progressRepository.save(progress);
         } else if (contentType && contentType !== progress.contentType) {
-            // User switched content type - find first content of that type
-            const firstContent = await this.contentRepository.findOne({
-                where: { contentType },
-                order: { workTitle: 'ASC', chapter: 'ASC', section: 'ASC' },
-            });
-
-            if (firstContent) {
-                progress.contentType = contentType;
-                progress.workTitle = firstContent.workTitle;
-                progress.chapter = firstContent.chapter;
-                progress.section = firstContent.section;
-                progress.cursorPos = 0;
-                await this.progressRepository.save(progress);
-            }
+            // 콘텐츠 타입 변경: 해당 타입의 랜덤 작품 첫 문단으로
+            const randomContent = await this.getRandomFirstContent(contentType);
+            progress.contentType = randomContent.contentType;
+            progress.workTitle = randomContent.workTitle;
+            progress.chapter = 1;
+            progress.section = 1;
+            progress.cursorPos = 0;
+            await this.progressRepository.save(progress);
         }
 
         // Fetch content
@@ -90,15 +84,44 @@ export class TypingService {
         };
     }
 
+    private async getRandomFirstContent(contentType?: ContentType) {
+        // 콘텐츠 타입이 지정되지 않으면 소설, 시, 수필 중 랜덤 선택
+        const randomTypes = [ContentType.NOVEL, ContentType.POEM, ContentType.ESSAY];
+        const selectedType = contentType || randomTypes[Math.floor(Math.random() * randomTypes.length)];
+
+        // 해당 타입의 랜덤 작품 첫 문단 가져오기
+        const content = await this.contentRepository
+            .createQueryBuilder('content')
+            .where('content.content_type = :contentType', { contentType: selectedType })
+            .andWhere('content.chapter = 1')
+            .andWhere('content.section = 1')
+            .orderBy('RANDOM()')
+            .getOne();
+
+        if (!content) {
+            return {
+                contentType: selectedType,
+                workTitle: '샘플',
+            };
+        }
+
+        return {
+            contentType: content.contentType,
+            workTitle: content.workTitle,
+        };
+    }
+
     private async getRandomContent(contentType?: ContentType) {
         // 콘텐츠 타입이 지정되지 않으면 소설, 시, 수필 중 랜덤 선택
         const randomTypes = [ContentType.NOVEL, ContentType.POEM, ContentType.ESSAY];
         const selectedType = contentType || randomTypes[Math.floor(Math.random() * randomTypes.length)];
 
-        // 해당 타입의 랜덤 콘텐츠 가져오기
+        // 해당 타입의 랜덤 작품의 첫 문단 가져오기 (chapter=1, section=1)
         const content = await this.contentRepository
             .createQueryBuilder('content')
             .where('content.content_type = :contentType', { contentType: selectedType })
+            .andWhere('content.chapter = 1')
+            .andWhere('content.section = 1')
             .orderBy('RANDOM()')
             .getOne();
 
@@ -201,6 +224,90 @@ export class TypingService {
         }
 
         return { success: true };
+    }
+
+    async getNextContent(
+        user: { userId: string; email: string } | null,
+        data: {
+            contentType: ContentType;
+            workTitle: string;
+            chapter: number;
+            section: number;
+        }
+    ) {
+        // 다음 섹션 찾기
+        let nextContent = await this.contentRepository.findOne({
+            where: {
+                contentType: data.contentType,
+                workTitle: data.workTitle,
+                chapter: data.chapter,
+                section: data.section + 1,
+            },
+        });
+
+        // 다음 섹션이 없으면 다음 챕터의 첫 섹션
+        if (!nextContent) {
+            nextContent = await this.contentRepository.findOne({
+                where: {
+                    contentType: data.contentType,
+                    workTitle: data.workTitle,
+                    chapter: data.chapter + 1,
+                    section: 1,
+                },
+            });
+        }
+
+        // 다음 챕터도 없으면 같은 타입의 다른 랜덤 작품 선택
+        if (!nextContent) {
+            nextContent = await this.contentRepository
+                .createQueryBuilder('content')
+                .where('content.content_type = :contentType', { contentType: data.contentType })
+                .andWhere('content.work_title != :workTitle', { workTitle: data.workTitle })
+                .andWhere('content.chapter = 1')
+                .andWhere('content.section = 1')
+                .orderBy('RANDOM()')
+                .getOne();
+        }
+
+        // 다른 작품도 없으면 현재 작품 처음으로 돌아가기 (fallback)
+        if (!nextContent) {
+            nextContent = await this.contentRepository.findOne({
+                where: {
+                    contentType: data.contentType,
+                    workTitle: data.workTitle,
+                    chapter: 1,
+                    section: 1,
+                },
+            });
+        }
+
+        if (!nextContent) {
+            throw new Error('Content not found');
+        }
+
+        // 로그인 사용자는 진행 저장
+        if (user) {
+            let progress = await this.progressRepository.findOne({ where: { userId: user.userId } });
+            if (progress) {
+                progress.contentType = nextContent.contentType;
+                progress.workTitle = nextContent.workTitle;
+                progress.chapter = nextContent.chapter;
+                progress.section = nextContent.section;
+                progress.cursorPos = 0;
+                await this.progressRepository.save(progress);
+            }
+        }
+
+        return {
+            contentType: nextContent.contentType,
+            workTitle: nextContent.workTitle,
+            chapter: nextContent.chapter,
+            section: nextContent.section,
+            content: nextContent.content,
+            displayReference: nextContent.displayReference,
+            author: nextContent.author,
+            cursorPos: 0,
+        };
     }
 
     async setContent(

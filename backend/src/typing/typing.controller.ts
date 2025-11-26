@@ -32,6 +32,20 @@ export class TypingController {
         return this.typingService.setContent(req.user || null, body);
     }
 
+    @Post('content/next')
+    async getNextContent(
+        @Req() req,
+        @Body() body: {
+            contentType: ContentType;
+            workTitle: string;
+            chapter: number;
+            section: number;
+        }
+    ) {
+        // 현재 위치 기반으로 다음 콘텐츠 가져오기
+        return this.typingService.getNextContent(req.user || null, body);
+    }
+
     @UseGuards(AuthGuard('jwt'))
     @Post('submit')
     async submit(

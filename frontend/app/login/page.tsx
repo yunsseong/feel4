@@ -15,7 +15,7 @@ function LoginContent() {
             // Save token
             localStorage.setItem("accessToken", token);
             // Redirect to typing page
-            router.push("/typing");
+            router.push("/");
         }
     }, [searchParams, router]);
 
