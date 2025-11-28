@@ -8,6 +8,7 @@ import { AuthService } from './auth.service';
 import { GoogleStrategy } from './google.strategy';
 import { JwtStrategy } from './jwt.strategy';
 import { User } from '../users/user.entity';
+import { UsersController } from '../users/users.controller';
 
 @Module({
     imports: [
@@ -22,7 +23,7 @@ import { User } from '../users/user.entity';
             inject: [ConfigService],
         }),
     ],
-    controllers: [AuthController],
+    controllers: [AuthController, UsersController],
     providers: [AuthService, GoogleStrategy, JwtStrategy],
     exports: [AuthService],
 })

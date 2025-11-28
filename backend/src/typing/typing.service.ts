@@ -103,7 +103,7 @@ export class TypingService {
         }
 
         const content = await this.contentRepository.findOne({
-            where: { contentType, workTitle, chapter, section },
+            where: { contentType, workTitle, chapter, section, isActive: true },
         });
 
         if (content) {
@@ -122,6 +122,7 @@ export class TypingService {
         const content = await this.contentRepository
             .createQueryBuilder('content')
             .where('content.content_type = :contentType', { contentType: selectedType })
+            .andWhere('content.is_active = true')
             .andWhere('content.chapter = 1')
             .andWhere('content.section = 1')
             .orderBy('RANDOM()')
@@ -149,6 +150,7 @@ export class TypingService {
         const content = await this.contentRepository
             .createQueryBuilder('content')
             .where('content.content_type = :contentType', { contentType: selectedType })
+            .andWhere('content.is_active = true')
             .andWhere('content.chapter = 1')
             .andWhere('content.section = 1')
             .orderBy('RANDOM()')
@@ -189,13 +191,14 @@ export class TypingService {
             return cached;
         }
 
-        // Get unique work titles for a content type
+        // Get unique work titles for a content type (only active)
         const works = await this.contentRepository
             .createQueryBuilder('content')
             .select('content.work_title', 'workTitle')
             .addSelect('content.author', 'author')
             .addSelect('content.publication_year', 'publicationYear')
             .where('content.content_type = :contentType', { contentType })
+            .andWhere('content.is_active = true')
             .groupBy('content.work_title')
             .addGroupBy('content.author')
             .addGroupBy('content.publication_year')
@@ -294,6 +297,7 @@ export class TypingService {
             nextContent = await this.contentRepository
                 .createQueryBuilder('content')
                 .where('content.content_type = :contentType', { contentType: data.contentType })
+                .andWhere('content.is_active = true')
                 .andWhere('content.work_title != :workTitle', { workTitle: data.workTitle })
                 .andWhere('content.chapter = 1')
                 .andWhere('content.section = 1')

@@ -6,6 +6,7 @@ import { redisStore } from 'cache-manager-redis-yet';
 import { UsersModule } from './users/users.module';
 import { TypingModule } from './typing/typing.module';
 import { AuthModule } from './auth/auth.module';
+import { AdminModule } from './admin/admin.module';
 import { User } from './users/user.entity';
 import { TypingProgress } from './typing/typing-progress.entity';
 import { TypingStats } from './typing/typing-stats.entity';
@@ -44,6 +45,7 @@ import { Content } from './typing/content.entity';
     UsersModule,
     TypingModule,
     AuthModule,
+    AdminModule,
   ],
   controllers: [],
   providers: [],

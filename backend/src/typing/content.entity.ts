@@ -40,6 +40,9 @@ export class Content {
     @Column({ name: 'is_public_domain', default: true })
     isPublicDomain: boolean;
 
+    @Column({ name: 'is_active', default: true })
+    isActive: boolean;
+
     @CreateDateColumn({ name: 'created_at' })
     createdAt: Date;
 }

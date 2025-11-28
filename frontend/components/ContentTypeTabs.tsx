@@ -12,7 +12,7 @@ const CONTENT_TYPE_LABELS: Record<ContentType, string> = {
 };
 
 interface ContentTypeTabsProps {
-  selectedType: ContentType;
+  selectedType: ContentType | null;
   onTypeChange: (type: ContentType) => void;
 }
 

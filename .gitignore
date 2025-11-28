@@ -20,3 +20,9 @@
 
 # Content files
 content/
+
+# Claude docs
+claudedocs/
+
+# Playwright MCP
+.playwright-mcp/
