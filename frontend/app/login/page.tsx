@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
+import { getUserProfile } from "@/lib/api";
 
 function LoginContent() {
     const router = useRouter();
@@ -11,11 +12,21 @@ function LoginContent() {
 
     useEffect(() => {
         const token = searchParams.get("token");
+        const redirect = searchParams.get("redirect");
+
         if (token) {
             // Save token
             localStorage.setItem("accessToken", token);
-            // Redirect to typing page
-            router.push("/");
+
+            // Fetch profile to populate cache and cookie
+            getUserProfile().then((profile) => {
+                if (redirect && profile?.role === "admin") {
+                    // admin이고 redirect가 있으면 해당 경로로
+                    router.push(redirect);
+                } else {
+                    router.push("/");
+                }
+            });
         }
     }, [searchParams, router]);
 
