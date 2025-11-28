@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { getUserProfile } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
@@ -98,11 +99,30 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [mounted, setMounted] = useState(false);
+  const [authorized, setAuthorized] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+
+    // 권한 체크
+    const checkAuth = async () => {
+      const profile = await getUserProfile();
+      if (!profile || profile.role !== 'admin') {
+        router.replace('/');
+        return;
+      }
+      setAuthorized(true);
+    };
+
+    checkAuth();
+  }, [router]);
+
+  // 권한 체크 중이거나 권한 없으면 아무것도 표시 안함
+  if (!authorized) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-background">
