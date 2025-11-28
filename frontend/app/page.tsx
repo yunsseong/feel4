@@ -2,6 +2,8 @@ import { cookies } from "next/headers";
 import { HomeContent } from "./HomeContent";
 import { UserProfile } from "@/lib/api";
 
+export const runtime = "edge";
+
 export default async function Home() {
   const cookieStore = await cookies();
   const profileCookie = cookieStore.get("userProfileCache");
