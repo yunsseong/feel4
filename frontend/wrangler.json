@@ -1,7 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "feel4-frontend",
-  "main": ".open-next/worker.js",
   "compatibility_date": "2025-11-25",
   "compatibility_flags": ["nodejs_compat"],
   "pages_build_output_dir": ".open-next/assets",
