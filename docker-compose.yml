@@ -25,16 +25,12 @@ services:
     networks:
       - feel4-network
     restart: always
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
 
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
     container_name: feel4-backend
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     ports:
       - "3201:3201"
     environment:
