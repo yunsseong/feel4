@@ -18,8 +18,8 @@
 # Logs
 *.log
 
-# Content files
-content/
+# Content files (root level only)
+/content/
 
 # Claude docs
 claudedocs/
