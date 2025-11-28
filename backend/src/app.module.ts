@@ -40,7 +40,7 @@ import { Content } from './typing/content.entity';
       password: process.env.DATABASE_PASSWORD || 'postgres',
       database: process.env.DATABASE_NAME || 'feel4',
       entities: [User, TypingProgress, TypingStats, Bible, Content],
-      synchronize: true, // Set to false in production
+      synchronize: process.env.NODE_ENV !== 'production',
     }),
     UsersModule,
     TypingModule,

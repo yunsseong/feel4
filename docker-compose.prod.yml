@@ -21,6 +21,7 @@ services:
     ports:
       - "3201:3201"
     environment:
+      NODE_ENV: production
       DATABASE_HOST: ${DATABASE_HOST:-localhost}
       DATABASE_PORT: ${DATABASE_PORT:-5432}
       DATABASE_USER: ${DATABASE_USER}
