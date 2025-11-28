@@ -11,14 +11,12 @@ function LoginContent() {
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        const token = searchParams.get("token");
+        const success = searchParams.get("success");
         const redirect = searchParams.get("redirect");
 
-        if (token) {
-            // Save token
-            localStorage.setItem("accessToken", token);
-
-            // Fetch profile to populate cache and cookie
+        if (success === "true") {
+            // 백엔드에서 HttpOnly 쿠키로 토큰 설정됨
+            // 프로필 가져와서 캐시 및 리다이렉트
             getUserProfile().then((profile) => {
                 if (redirect && profile?.role === "admin") {
                     // admin이고 redirect가 있으면 해당 경로로

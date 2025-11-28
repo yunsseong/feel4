@@ -17,6 +17,7 @@ function setCookie(name: string, value: string, days: number = 7) {
 }
 
 function getCookie(name: string): string | null {
+  if (typeof document === "undefined") return null;
   const value = `; ${document.cookie}`;
   const parts = value.split(`; ${name}=`);
   if (parts.length === 2) {
@@ -33,12 +34,7 @@ function deleteCookie(name: string) {
 }
 
 export function getCachedProfile(): UserProfile | null {
-  const token = localStorage.getItem("accessToken");
-  if (!token) {
-    localStorage.removeItem(PROFILE_CACHE_KEY);
-    deleteCookie(PROFILE_COOKIE_KEY);
-    return null;
-  }
+  if (typeof localStorage === "undefined") return null;
 
   // localStorage 먼저 확인
   const cached = localStorage.getItem(PROFILE_CACHE_KEY);
@@ -56,7 +52,6 @@ export function getCachedProfile(): UserProfile | null {
 }
 
 export function getProfileFromCookie(): UserProfile | null {
-  if (typeof document === "undefined") return null;
   const cached = getCookie(PROFILE_COOKIE_KEY);
   if (cached) {
     try {
@@ -69,36 +64,27 @@ export function getProfileFromCookie(): UserProfile | null {
 }
 
 export async function getUserProfile(): Promise<UserProfile | null> {
-  const token = localStorage.getItem("accessToken");
-  if (!token) {
-    localStorage.removeItem(PROFILE_CACHE_KEY);
-    deleteCookie(PROFILE_COOKIE_KEY);
-    return null;
-  }
-
   // 캐시된 프로필이 있으면 반환
   const cached = getCachedProfile();
   if (cached) return cached;
 
   try {
     const response = await fetch(`${API_URL}/users/me`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      credentials: "include", // 쿠키 자동 전송
     });
 
     if (!response.ok) {
       if (response.status === 401) {
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem(PROFILE_CACHE_KEY);
-        deleteCookie(PROFILE_COOKIE_KEY);
+        clearProfileCache();
       }
       return null;
     }
 
     const profile = await response.json();
     const profileJson = JSON.stringify(profile);
-    localStorage.setItem(PROFILE_CACHE_KEY, profileJson);
+    if (typeof localStorage !== "undefined") {
+      localStorage.setItem(PROFILE_CACHE_KEY, profileJson);
+    }
     setCookie(PROFILE_COOKIE_KEY, profileJson);
     return profile;
   } catch (error) {
@@ -108,6 +94,20 @@ export async function getUserProfile(): Promise<UserProfile | null> {
 }
 
 export function clearProfileCache() {
-  localStorage.removeItem(PROFILE_CACHE_KEY);
+  if (typeof localStorage !== "undefined") {
+    localStorage.removeItem(PROFILE_CACHE_KEY);
+  }
   deleteCookie(PROFILE_COOKIE_KEY);
+}
+
+export async function logout(): Promise<void> {
+  try {
+    await fetch(`${API_URL}/auth/logout`, {
+      method: "POST",
+      credentials: "include",
+    });
+  } catch (error) {
+    console.error("Logout failed:", error);
+  }
+  clearProfileCache();
 }

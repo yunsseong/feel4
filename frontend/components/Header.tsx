@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
-import { getUserProfile, clearProfileCache, type UserProfile } from "@/lib/api";
+import { getUserProfile, logout, type UserProfile } from "@/lib/api";
 import Image from "next/image";
 
 interface HeaderProps {
@@ -39,9 +39,8 @@ export function Header({ initialProfile = null }: HeaderProps) {
     };
   }, [showMenu]);
 
-  const handleLogout = () => {
-    localStorage.removeItem("accessToken");
-    clearProfileCache();
+  const handleLogout = async () => {
+    await logout();
     setUser(null);
     setShowMenu(false);
     router.push("/");

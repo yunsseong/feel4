@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { getUserProfile } from '@/lib/api';
+import { getUserProfile, logout } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
@@ -191,8 +191,8 @@ export default function AdminLayout({
 }
 
 function UserMenu() {
-  const handleLogout = () => {
-    localStorage.removeItem('accessToken');
+  const handleLogout = async () => {
+    await logout();
     window.location.href = '/';
   };
 

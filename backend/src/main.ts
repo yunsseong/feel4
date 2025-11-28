@@ -1,10 +1,14 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
+import cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
+
+  // 쿠키 파서 미들웨어 추가
+  app.use(cookieParser());
 
   const corsOrigins = configService.get<string>('CORS_ORIGINS');
   const allowedOrigins = corsOrigins
