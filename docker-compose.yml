@@ -32,7 +32,6 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: feel4-backend
-    profiles: ["prod"]
     ports:
       - "3201:3201"
     environment:
