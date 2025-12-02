@@ -55,6 +55,7 @@ services:
       - redis
     networks:
       - feel4-network
+      - nginx-proxy-manager_default
     restart: always
 
   # Development backend (with hot reload)
@@ -94,6 +95,8 @@ services:
 networks:
   feel4-network:
     driver: bridge
+  nginx-proxy-manager_default:
+    external: true
 
 volumes:
   postgres_data:
