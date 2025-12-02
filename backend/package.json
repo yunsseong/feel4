@@ -21,7 +21,11 @@
     "seed:bible": "ts-node src/scripts/seed-bible.ts",
     "seed:content": "ts-node src/scripts/seed-content.ts",
     "analyze:long-content": "ts-node src/scripts/analyze-long-content.ts",
-    "migrate:split-long-content": "ts-node src/scripts/split-long-content.ts"
+    "migrate:split-long-content": "ts-node src/scripts/split-long-content.ts",
+    "typeorm": "typeorm-ts-node-commonjs",
+    "migration:generate": "npm run typeorm -- migration:generate -d src/data-source.ts",
+    "migration:run": "npm run build && npm run typeorm -- migration:run -d dist/data-source.js",
+    "migration:revert": "npm run typeorm -- migration:revert -d dist/data-source.js"
   },
   "dependencies": {
     "@nestjs/cache-manager": "^3.0.1",
@@ -37,6 +41,7 @@
     "cache-manager": "^7.2.5",
     "cache-manager-redis-yet": "^5.1.5",
     "cookie-parser": "^1.4.7",
+    "dotenv": "^16.4.5",
     "passport-google-oauth20": "^2.0.0",
     "passport-jwt": "^4.0.1",
     "pg": "^8.16.3",

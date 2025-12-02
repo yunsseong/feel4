@@ -10,4 +10,6 @@ COPY . .
 
 RUN npm run build
 
-CMD ["npm", "run", "start:prod"]
+RUN chmod +x entrypoint.sh
+
+CMD ["./entrypoint.sh"]
