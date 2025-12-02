@@ -26,15 +26,17 @@ services:
       - feel4-network
     restart: always
 
+  # Production backend (default)
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
     container_name: feel4-backend
+    profiles: ["prod"]
     ports:
       - "3201:3201"
     environment:
-      NODE_ENV: ${NODE_ENV:-development}
+      NODE_ENV: production
       DATABASE_HOST: postgres
       DATABASE_PORT: 5432
       DATABASE_USER: ${POSTGRES_USER:-postgres}
@@ -54,10 +56,40 @@ services:
     networks:
       - feel4-network
     restart: always
+
+  # Development backend (with hot reload)
+  backend-dev:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: feel4-backend
+    profiles: ["dev"]
+    ports:
+      - "3201:3201"
+    environment:
+      NODE_ENV: development
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_USER: ${POSTGRES_USER:-postgres}
+      DATABASE_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      DATABASE_NAME: ${POSTGRES_DB:-feel4}
+      JWT_SECRET: ${JWT_SECRET:-supersecretkey}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      GOOGLE_CALLBACK_URL: ${GOOGLE_CALLBACK_URL:-http://localhost:3201/auth/google/callback}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3200}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3200,http://localhost:3000}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - feel4-network
     volumes:
       - ./backend:/usr/src/app
       - /usr/src/app/node_modules
-    command: npm run ${START_CMD:-start:dev}
+    command: npm run start:dev
 
 networks:
   feel4-network:
