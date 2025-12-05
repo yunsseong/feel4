@@ -14,6 +14,7 @@ import {
   ArrowRight,
   AlertCircle,
 } from 'lucide-react';
+import { getAuthFetchOptions } from '@/lib/mobile-auth';
 
 interface DashboardStats {
   users: number;
@@ -43,29 +44,28 @@ export default function AdminDashboard() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const token = localStorage.getItem('accessToken');
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+    const loadStats = async () => {
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+        const fetchOptions = await getAuthFetchOptions();
 
-    fetch(`${apiUrl}/admin/stats/overview`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then((res) => {
+        const res = await fetch(`${apiUrl}/admin/stats/overview`, fetchOptions);
+
         if (!res.ok) {
           throw new Error(`HTTP error: ${res.status}`);
         }
-        return res.json();
-      })
-      .then((data) => {
+
+        const data = await res.json();
         setStats(data);
         setLoading(false);
-      })
-      .catch((err) => {
+      } catch (err) {
         console.error('Failed to fetch stats:', err);
         setError('통계를 불러오는데 실패했습니다');
         setLoading(false);
-      });
+      }
+    };
+
+    loadStats();
   }, []);
 
   const statCards = [

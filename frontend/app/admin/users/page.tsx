@@ -35,6 +35,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
+import { getAuthFetchOptions } from '@/lib/mobile-auth';
 
 interface User {
   id: string;
@@ -58,12 +59,10 @@ export default function AdminUsersPage() {
   const loadUsers = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('accessToken');
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+      const fetchOptions = await getAuthFetchOptions();
 
-      const res = await fetch(`${apiUrl}/admin/users/list?page=${page}&limit=20`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await fetch(`${apiUrl}/admin/users/list?page=${page}&limit=20`, fetchOptions);
 
       if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
 
@@ -81,17 +80,13 @@ export default function AdminUsersPage() {
     if (!confirm('사용자 역할을 변경하시겠습니까?')) return;
 
     try {
-      const token = localStorage.getItem('accessToken');
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-
-      const res = await fetch(`${apiUrl}/admin/users/${userId}/role`, {
+      const fetchOptions = await getAuthFetchOptions({
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
         body: JSON.stringify({ role: newRole }),
       });
+
+      const res = await fetch(`${apiUrl}/admin/users/${userId}/role`, fetchOptions);
 
       if (res.ok) {
         setUsers(users.map(u => (u.id === userId ? { ...u, role: newRole } : u)));
@@ -105,13 +100,10 @@ export default function AdminUsersPage() {
     if (!confirm(`${email} 사용자를 삭제하시겠습니까?`)) return;
 
     try {
-      const token = localStorage.getItem('accessToken');
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+      const fetchOptions = await getAuthFetchOptions({ method: 'DELETE' });
 
-      const res = await fetch(`${apiUrl}/admin/users/${userId}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await fetch(`${apiUrl}/admin/users/${userId}`, fetchOptions);
 
       if (res.ok) {
         setUsers(users.filter(u => u.id !== userId));
