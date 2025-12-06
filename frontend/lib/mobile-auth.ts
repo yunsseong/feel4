@@ -1,66 +1,43 @@
-import { Capacitor } from '@capacitor/core';
-import { Preferences } from '@capacitor/preferences';
-
-const TOKEN_KEY = 'accessToken';
+/**
+ * Get fetch options with authentication
+ * - Web: Uses credentials: 'include' for cookie
+ * - Mobile: Would add Authorization header with token (when Capacitor is installed)
+ */
+export async function getAuthFetchOptions(options?: RequestInit): Promise<RequestInit> {
+  // For now, web-only implementation using cookies
+  // Mobile support can be added later when Capacitor is configured
+  return {
+    ...options,
+    credentials: 'include' as RequestCredentials,
+    headers: {
+      ...options?.headers,
+    },
+  };
+}
 
 /**
  * Save authentication token
- * - Web: Uses HttpOnly cookie (set by backend)
- * - Mobile: Uses Capacitor Preferences
+ * Currently a no-op for web (uses HttpOnly cookie set by backend)
  */
 export async function saveToken(token: string): Promise<void> {
-  if (Capacitor.isNativePlatform()) {
-    await Preferences.set({ key: TOKEN_KEY, value: token });
-  }
   // Web uses HttpOnly cookie set by backend
+  // Mobile implementation would use Capacitor Preferences
 }
 
 /**
  * Get authentication token
- * - Web: Returns null (uses cookie automatically)
- * - Mobile: Returns token from Preferences
+ * Returns null for web (uses cookie automatically)
  */
 export async function getToken(): Promise<string | null> {
-  if (Capacitor.isNativePlatform()) {
-    const { value } = await Preferences.get({ key: TOKEN_KEY });
-    return value;
-  }
   // Web uses cookie automatically
   return null;
 }
 
 /**
  * Clear authentication token
+ * Currently a no-op for web (cookie cleared by backend /auth/logout)
  */
 export async function clearToken(): Promise<void> {
-  if (Capacitor.isNativePlatform()) {
-    await Preferences.remove({ key: TOKEN_KEY });
-  }
   // Web cookie cleared by backend /auth/logout
-}
-
-/**
- * Get fetch options with authentication
- * - Web: Uses credentials: 'include' for cookie
- * - Mobile: Adds Authorization header with token
- */
-export async function getAuthFetchOptions(options?: RequestInit): Promise<RequestInit> {
-  const isNative = Capacitor.isNativePlatform();
-
-  if (isNative) {
-    const token = await getToken();
-    return {
-      ...options,
-      headers: {
-        ...options?.headers,
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-    };
-  }
-
-  // Web: use cookies
-  return {
-    ...options,
-    credentials: 'include',
-  };
+  // Mobile implementation would use Capacitor Preferences
 }
