@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import { getAuthFetchOptions } from '@/lib/mobile-auth';
 import { ArrowLeft, Save, FileText, BookOpen, BookMarked, ScrollText, Scissors, Eye } from 'lucide-react';
 
 const contentTypeConfig = {
@@ -68,13 +69,11 @@ export default function NewContentPage() {
     if (!formData.content.trim()) return;
 
     try {
-      const token = localStorage.getItem('accessToken');
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
-      const res = await fetch(`${apiUrl}/admin/content/preview-split`, {
+      const authOptions = await getAuthFetchOptions({
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -82,6 +81,7 @@ export default function NewContentPage() {
           maxLength: RECOMMENDED_LENGTH,
         }),
       });
+      const res = await fetch(`${apiUrl}/admin/content/preview-split`, authOptions);
 
       if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
 
@@ -99,14 +99,12 @@ export default function NewContentPage() {
     setSaving(true);
 
     try {
-      const token = localStorage.getItem('accessToken');
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
       // 대량 등록 API 호출
-      const res = await fetch(`${apiUrl}/admin/content/bulk`, {
+      const authOptions = await getAuthFetchOptions({
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -119,6 +117,7 @@ export default function NewContentPage() {
           maxLength: RECOMMENDED_LENGTH,
         }),
       });
+      const res = await fetch(`${apiUrl}/admin/content/bulk`, authOptions);
 
       if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
 
