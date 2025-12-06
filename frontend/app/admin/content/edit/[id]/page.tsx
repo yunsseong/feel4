@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import { getAuthFetchOptions } from '@/lib/mobile-auth';
 import {
   ArrowLeft,
   Save,
@@ -67,14 +68,10 @@ export default function EditContentPage() {
 
   const loadContent = async () => {
     try {
-      const token = localStorage.getItem('accessToken');
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
-      const res = await fetch(`${apiUrl}/admin/content/${id}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
+      const authOptions = await getAuthFetchOptions();
+      const res = await fetch(`${apiUrl}/admin/content/${id}`, authOptions);
 
       if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
 
@@ -93,17 +90,16 @@ export default function EditContentPage() {
     setSaving(true);
 
     try {
-      const token = localStorage.getItem('accessToken');
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
-      const res = await fetch(`${apiUrl}/admin/content/${id}`, {
+      const authOptions = await getAuthFetchOptions({
         method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(formData),
       });
+      const res = await fetch(`${apiUrl}/admin/content/${id}`, authOptions);
 
       if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
 
@@ -141,13 +137,11 @@ export default function EditContentPage() {
     setSplitting(true);
 
     try {
-      const token = localStorage.getItem('accessToken');
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
-      const res = await fetch(`${apiUrl}/admin/content/split`, {
+      const authOptions = await getAuthFetchOptions({
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -155,6 +149,7 @@ export default function EditContentPage() {
           maxLength: RECOMMENDED_LENGTH,
         }),
       });
+      const res = await fetch(`${apiUrl}/admin/content/split`, authOptions);
 
       if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
 

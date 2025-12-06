@@ -23,6 +23,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
+import { getAuthFetchOptions } from '@/lib/mobile-auth';
 import {
   Plus,
   MoreHorizontal,
@@ -107,15 +108,13 @@ export default function AdminContentPage() {
   const loadWorks = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('accessToken');
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
       const url = filter && filter !== 'all'
         ? `${apiUrl}/admin/content/works?type=${filter}`
         : `${apiUrl}/admin/content/works`;
 
-      const res = await fetch(url, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const authOptions = await getAuthFetchOptions();
+      const res = await fetch(url, authOptions);
 
       if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
       setWorks(await res.json());
@@ -130,12 +129,12 @@ export default function AdminContentPage() {
     if (!selectedWork) return;
     setSectionsLoading(true);
     try {
-      const token = localStorage.getItem('accessToken');
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
+      const authOptions = await getAuthFetchOptions();
       const res = await fetch(
         `${apiUrl}/admin/content/list?workTitle=${encodeURIComponent(selectedWork)}&page=${page}&limit=${limit}`,
-        { headers: { Authorization: `Bearer ${token}` } }
+        authOptions
       );
 
       if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
@@ -155,13 +154,10 @@ export default function AdminContentPage() {
     if (!confirm(`"${workTitle}" 작품을 삭제하시겠습니까?`)) return;
 
     try {
-      const token = localStorage.getItem('accessToken');
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
-      const res = await fetch(`${apiUrl}/admin/content/work/${encodeURIComponent(workTitle)}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const authOptions = await getAuthFetchOptions({ method: 'DELETE' });
+      const res = await fetch(`${apiUrl}/admin/content/work/${encodeURIComponent(workTitle)}`, authOptions);
 
       if (res.ok) {
         setWorks(works.filter(w => w.workTitle !== workTitle));
@@ -173,13 +169,10 @@ export default function AdminContentPage() {
 
   const handleToggle = async (workTitle: string) => {
     try {
-      const token = localStorage.getItem('accessToken');
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
-      const res = await fetch(`${apiUrl}/admin/content/work/${encodeURIComponent(workTitle)}/toggle`, {
-        method: 'PUT',
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const authOptions = await getAuthFetchOptions({ method: 'PUT' });
+      const res = await fetch(`${apiUrl}/admin/content/work/${encodeURIComponent(workTitle)}/toggle`, authOptions);
 
       if (res.ok) {
         const data = await res.json();
@@ -196,13 +189,10 @@ export default function AdminContentPage() {
     if (!confirm('이 섹션을 삭제하시겠습니까?')) return;
 
     try {
-      const token = localStorage.getItem('accessToken');
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
-      const res = await fetch(`${apiUrl}/admin/content/${sectionId}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const authOptions = await getAuthFetchOptions({ method: 'DELETE' });
+      const res = await fetch(`${apiUrl}/admin/content/${sectionId}`, authOptions);
 
       if (res.ok) {
         setSections(sections.filter(s => s.id !== sectionId));
@@ -218,17 +208,16 @@ export default function AdminContentPage() {
 
     setSplitting(true);
     try {
-      const token = localStorage.getItem('accessToken');
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
-      const res = await fetch(`${apiUrl}/admin/content/split`, {
+      const authOptions = await getAuthFetchOptions({
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ contentId: section.id, maxLength: 150 }),
       });
+      const res = await fetch(`${apiUrl}/admin/content/split`, authOptions);
 
       if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
 
@@ -278,26 +267,26 @@ export default function AdminContentPage() {
                   if (!confirm(`${totalLong}개의 긴 섹션을 모두 분할하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`)) return;
                   setSplitting(true);
                   try {
-                    const token = localStorage.getItem('accessToken');
                     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
                     // Fetch all sections to find all long ones
+                    const listAuthOptions = await getAuthFetchOptions();
                     const allRes = await fetch(
                       `${apiUrl}/admin/content/list?workTitle=${encodeURIComponent(selectedWork)}&page=1&limit=10000`,
-                      { headers: { Authorization: `Bearer ${token}` } }
+                      listAuthOptions
                     );
                     const allData = await allRes.json();
                     const allLongSections = allData.items.filter((s: Section) => s.content.length > WARNING_LENGTH);
 
                     for (const section of allLongSections) {
-                      await fetch(`${apiUrl}/admin/content/split`, {
+                      const splitAuthOptions = await getAuthFetchOptions({
                         method: 'POST',
                         headers: {
-                          Authorization: `Bearer ${token}`,
                           'Content-Type': 'application/json',
                         },
                         body: JSON.stringify({ contentId: section.id, maxLength: 150 }),
                       });
+                      await fetch(`${apiUrl}/admin/content/split`, splitAuthOptions);
                     }
                     loadWorks();
                     loadSections();

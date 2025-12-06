@@ -13,6 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { getAuthFetchOptions } from '@/lib/mobile-auth';
 import {
   Server,
   Database,
@@ -56,12 +57,10 @@ export default function AdminSettingsPage() {
     setLoading(true);
     setError(null);
     try {
-      const token = localStorage.getItem('accessToken');
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
-      const res = await fetch(`${apiUrl}/admin/system/info`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const authOptions = await getAuthFetchOptions();
+      const res = await fetch(`${apiUrl}/admin/system/info`, authOptions);
 
       if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
       setSystemInfo(await res.json());
