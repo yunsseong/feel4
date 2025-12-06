@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { getAuthFetchOptions } from '@/lib/mobile-auth';
 import { BarChart3, TrendingUp, Trophy, Calendar } from 'lucide-react';
 
 interface TypingStats {
@@ -64,16 +65,12 @@ export default function AdminStatsPage() {
   const loadStats = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('accessToken');
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
+      const authOptions = await getAuthFetchOptions();
       const [typingRes, popularRes] = await Promise.all([
-        fetch(`${apiUrl}/admin/stats/typing?days=${days}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        fetch(`${apiUrl}/admin/stats/content/popular?limit=10`, {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
+        fetch(`${apiUrl}/admin/stats/typing?days=${days}`, authOptions),
+        fetch(`${apiUrl}/admin/stats/content/popular?limit=10`, authOptions),
       ]);
 
       if (typingRes.ok) setTypingStats(await typingRes.json());

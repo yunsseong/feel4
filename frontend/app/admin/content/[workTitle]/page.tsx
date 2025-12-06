@@ -7,6 +7,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { getAuthFetchOptions } from '@/lib/mobile-auth';
 
 interface Section {
   id: string;
@@ -38,16 +39,12 @@ export default function WorkDetailPage() {
   const loadSections = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('accessToken');
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
+      const authOptions = await getAuthFetchOptions();
       const res = await fetch(
         `${apiUrl}/admin/content/list?workTitle=${encodeURIComponent(workTitle)}&page=${page}&limit=${limit}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        authOptions
       );
 
       if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
@@ -69,15 +66,10 @@ export default function WorkDetailPage() {
     if (!confirm('이 섹션을 삭제하시겠습니까?')) return;
 
     try {
-      const token = localStorage.getItem('accessToken');
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
-      const res = await fetch(`${apiUrl}/admin/content/${sectionId}`, {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const authOptions = await getAuthFetchOptions({ method: 'DELETE' });
+      const res = await fetch(`${apiUrl}/admin/content/${sectionId}`, authOptions);
 
       if (res.ok) {
         setSections(sections.filter((s) => s.id !== sectionId));
