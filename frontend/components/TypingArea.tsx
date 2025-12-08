@@ -126,16 +126,33 @@ export function TypingArea({
             inputRef.current?.focus();
         };
 
+        // 페이지 어디서든 키 입력 시 입력창으로 포커스
+        const handleGlobalKeyDown = (e: KeyboardEvent) => {
+            // 모달이 열려있으면 무시
+            if (isThemeModalOpen) return;
+            // 이미 입력창에 포커스되어 있으면 무시
+            if (document.activeElement === inputRef.current) return;
+            // 특수 키 조합은 무시 (Ctrl, Alt, Meta + 키)
+            if (e.ctrlKey || e.altKey || e.metaKey) return;
+            // 기능 키는 무시 (F1-F12, Escape, Tab 등)
+            if (e.key.startsWith('F') || e.key === 'Escape' || e.key === 'Tab') return;
+
+            // 입력창에 포커스
+            inputRef.current?.focus();
+        };
+
         input.addEventListener('blur', handleBlur);
         document.addEventListener('visibilitychange', handleVisibilityChange);
         window.addEventListener('focus', handleWindowFocus);
+        document.addEventListener('keydown', handleGlobalKeyDown);
 
         return () => {
             input.removeEventListener('blur', handleBlur);
             document.removeEventListener('visibilitychange', handleVisibilityChange);
             window.removeEventListener('focus', handleWindowFocus);
+            document.removeEventListener('keydown', handleGlobalKeyDown);
         };
-    }, []);
+    }, [isThemeModalOpen]);
 
     // refs 준비 완료 후 커서 위치 초기화
     useLayoutEffect(() => {
