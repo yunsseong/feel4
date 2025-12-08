@@ -24,7 +24,7 @@ export function TypingArea({
     const normalizeContent = (text: string) => text.replace(/\s+/g, ' ').trim();
     const [input, setInput] = useState("");
     const [targetText, setTargetText] = useState(normalizeContent(initialContent));
-    const [startTime, setStartTime] = useState<number | null>(null);
+    const startTimeRef = useRef<number | null>(null);
     const [shake, setShake] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
     const charRefs = useRef<(HTMLSpanElement | null)[]>([]);
@@ -86,7 +86,7 @@ export function TypingArea({
     useEffect(() => {
         setTargetText(normalizeContent(initialContent));
         setInput("");
-        setStartTime(null);
+        startTimeRef.current = null;
         setShake(false);
         setRefsReady(false);
         setCursorStyle(null);
@@ -208,18 +208,18 @@ export function TypingArea({
 
     // 입력 완료 감지 및 자동 다음 문장 이동
     const triggerCompletion = useCallback(() => {
-        if (isCompleted || !onComplete || !startTime) return;
+        if (isCompleted || !onComplete || !startTimeRef.current) return;
 
         setIsCompleted(true);
         const endTime = Date.now();
-        const durationMin = (endTime - startTime) / 60000;
+        const durationMin = (endTime - startTimeRef.current) / 60000;
         const cpm = Math.round(targetText.length / durationMin);
 
         // 200ms 후 자동으로 다음으로 이동
         completionTimerRef.current = setTimeout(() => {
             onComplete({ cpm, accuracy: 100 });
         }, 200);
-    }, [isCompleted, onComplete, startTime, targetText.length]);
+    }, [isCompleted, onComplete, targetText.length]);
 
     // 공백 문자 정규화 함수: 줄바꿈 포함 모든 공백을 일반 공백으로 변환
     const normalizeSpaces = (text: string) => text.replace(/\s+/g, ' ').trim();
@@ -251,7 +251,7 @@ export function TypingArea({
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const val = e.target.value;
-        if (!startTime) setStartTime(Date.now());
+        if (!startTimeRef.current) startTimeRef.current = Date.now();
         setInput(val);
 
         // 조합 중이 아닐 때 완료 체크 (영문, 숫자, 공백, 따옴표 정규화)
@@ -294,9 +294,9 @@ export function TypingArea({
                 clearTimeout(completionTimerRef.current);
                 completionTimerRef.current = null;
             }
-            if (onComplete && startTime) {
+            if (onComplete && startTimeRef.current) {
                 const endTime = Date.now();
-                const durationMin = (endTime - startTime) / 60000;
+                const durationMin = (endTime - startTimeRef.current) / 60000;
                 const cpm = Math.round(targetText.length / durationMin);
                 onComplete({ cpm, accuracy: 100 });
             }
