@@ -10,15 +10,19 @@
 - **진행 상황 저장**: 로그인 후 어디서든 이어서 필사
 - **실시간 피드백**: 오타 시 시각적 피드백 제공
 - **한글 최적화**: 끊김 없는 한글 타이핑 경험
+- **테마 커스터마이징**: 폰트, 크기, 색상 설정 가능
+- **관리자 패널**: 콘텐츠 관리, 사용자 통계, 설정 관리
+- **모바일 앱 지원**: Capacitor 기반 iOS/Android 앱
 
 ## 기술 스택
 
 | 구분 | 기술 |
 |------|------|
-| Frontend | Next.js 16, React 19, Tailwind CSS |
+| Frontend | Next.js 15, React 19, Tailwind CSS |
 | Backend | NestJS 11, TypeORM |
 | Database | PostgreSQL 16 |
 | Auth | Google OAuth (Passport.js) |
+| Mobile | Capacitor |
 | Infra | Docker Compose |
 
 ## 시작하기
@@ -33,7 +37,7 @@
 
 ```bash
 # 저장소 클론
-git clone https://github.com/your-username/feel4.git
+git clone https://github.com/yunsseong/feel4.git
 cd feel4
 
 # 환경 변수 설정
@@ -81,12 +85,25 @@ cd backend
 npm run seed:bible
 ```
 
+### 모바일 빌드
+
+```bash
+cd frontend
+
+# iOS
+npm run mobile:ios
+
+# Android
+npm run mobile:android
+```
+
 ## 프로젝트 구조
 
 ```
 feel4/
 ├── backend/                # NestJS 백엔드
 │   ├── src/
+│   │   ├── admin/         # 관리자 API
 │   │   ├── auth/          # Google OAuth 인증
 │   │   ├── typing/        # 타이핑 API
 │   │   ├── users/         # 사용자 관리
@@ -94,7 +111,14 @@ feel4/
 │   └── package.json
 ├── frontend/              # Next.js 프론트엔드
 │   ├── app/               # App Router 페이지
+│   │   ├── admin/         # 관리자 페이지
+│   │   └── login/         # 로그인 페이지
 │   ├── components/        # React 컴포넌트
+│   │   ├── TypingArea     # 타이핑 영역
+│   │   ├── ThemeProvider  # 테마 관리
+│   │   └── ui/            # UI 컴포넌트
+│   ├── ios/               # iOS 앱 (Capacitor)
+│   ├── android/           # Android 앱 (Capacitor)
 │   └── package.json
 ├── docker-compose.yml
 └── README.md
@@ -112,4 +136,4 @@ feel4/
 
 ## 라이선스
 
-MIT License
+[MIT License](LICENSE)
