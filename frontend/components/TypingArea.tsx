@@ -98,6 +98,42 @@ export function TypingArea({
         return () => clearTimeout(timer);
     }, []);
 
+    // 항상 포커스 유지: blur 시 재포커스, 윈도우 포커스 시 재포커스
+    useEffect(() => {
+        const input = inputRef.current;
+        if (!input) return;
+
+        const handleBlur = () => {
+            // 약간의 딜레이 후 재포커스 (모달 등 다른 요소 클릭 허용)
+            setTimeout(() => {
+                if (document.activeElement?.tagName !== 'INPUT' &&
+                    document.activeElement?.tagName !== 'BUTTON') {
+                    inputRef.current?.focus();
+                }
+            }, 10);
+        };
+
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible') {
+                inputRef.current?.focus();
+            }
+        };
+
+        const handleWindowFocus = () => {
+            inputRef.current?.focus();
+        };
+
+        input.addEventListener('blur', handleBlur);
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        window.addEventListener('focus', handleWindowFocus);
+
+        return () => {
+            input.removeEventListener('blur', handleBlur);
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            window.removeEventListener('focus', handleWindowFocus);
+        };
+    }, []);
+
     // refs 준비 완료 후 커서 위치 초기화
     useLayoutEffect(() => {
         if (refsReady) {
