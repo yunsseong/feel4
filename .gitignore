@@ -20,6 +20,7 @@
 
 # Content files (root level only)
 /content/
+/texts/
 
 # Claude docs
 claudedocs/
