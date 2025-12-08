@@ -57,12 +57,10 @@ export default function RootLayout({
         <link href={GOOGLE_FONTS_URL} rel="stylesheet" />
       </head>
       <body className={cn(inter.variable, "font-sans antialiased bg-background text-foreground")}>
-        <FontReadyProvider>
-          <CapacitorProvider>
-            <KeyboardDismiss />
-            {children}
-          </CapacitorProvider>
-        </FontReadyProvider>
+        <CapacitorProvider>
+          <KeyboardDismiss />
+          {children}
+        </CapacitorProvider>
       </body>
     </html>
   );
