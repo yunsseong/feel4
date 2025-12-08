@@ -4,18 +4,43 @@ import { useEffect, useState } from 'react';
 
 /**
  * Loading Screen Component
- * Shows a loading screen during initial app load
+ * Shows a loading screen until fonts are fully loaded
  */
 export function LoadingScreen() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Hide loading screen after initial render
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 500);
+    const MIN_LOADING_TIME = 300; // 최소 로딩 시간 (너무 빨리 깜빡이는 것 방지)
+    const MAX_LOADING_TIME = 3000; // 최대 대기 시간 (폰트 로딩 실패 시 대비)
 
-    return () => clearTimeout(timer);
+    const startTime = Date.now();
+
+    // 폰트 로딩 완료 대기
+    const waitForFonts = async () => {
+      try {
+        // document.fonts.ready는 모든 폰트가 로드되면 resolve됨
+        await document.fonts.ready;
+      } catch {
+        // 폰트 API 지원하지 않는 경우 무시
+      }
+
+      // 최소 로딩 시간 보장
+      const elapsed = Date.now() - startTime;
+      const remainingTime = Math.max(0, MIN_LOADING_TIME - elapsed);
+
+      setTimeout(() => {
+        setIsLoading(false);
+      }, remainingTime);
+    };
+
+    // 최대 대기 시간 타임아웃 설정
+    const timeout = setTimeout(() => {
+      setIsLoading(false);
+    }, MAX_LOADING_TIME);
+
+    waitForFonts();
+
+    return () => clearTimeout(timeout);
   }, []);
 
   if (!isLoading) return null;
