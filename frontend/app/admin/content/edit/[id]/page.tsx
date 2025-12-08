@@ -1,6 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+
+// Required for static export with dynamic routes
+export function generateStaticParams() {
+  return [];
+}
 import { useRouter, useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
