@@ -15,10 +15,9 @@ interface HeaderProps {
 }
 
 export function Header({ initialProfile = null, onThemeClick }: HeaderProps) {
-  const { theme } = useTheme();
+  const { theme, isThemeModalOpen, setThemeModalOpen } = useTheme();
   const [user, setUser] = useState<UserProfile | null>(initialProfile);
   const [showMenu, setShowMenu] = useState(false);
-  const [showThemeModal, setShowThemeModal] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
@@ -60,7 +59,7 @@ export function Header({ initialProfile = null, onThemeClick }: HeaderProps) {
     if (onThemeClick) {
       onThemeClick();
     } else {
-      setShowThemeModal(true);
+      setThemeModalOpen(true);
     }
   };
 
@@ -165,7 +164,7 @@ export function Header({ initialProfile = null, onThemeClick }: HeaderProps) {
         ) : (
           <div className="flex items-center gap-4">
             <button
-              onClick={() => setShowThemeModal(true)}
+              onClick={() => setThemeModalOpen(true)}
               className="hover:opacity-80 transition-opacity"
               title="테마 설정"
               style={{ color: theme.fontColor }}
@@ -195,8 +194,8 @@ export function Header({ initialProfile = null, onThemeClick }: HeaderProps) {
         )}
       </header>
       <ThemeSettingsModal
-        isOpen={showThemeModal}
-        onClose={() => setShowThemeModal(false)}
+        isOpen={isThemeModalOpen}
+        onClose={() => setThemeModalOpen(false)}
       />
     </>
   );

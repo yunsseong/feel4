@@ -9,6 +9,8 @@ interface ThemeContextValue {
   theme: ThemeSettings;
   setTheme: (settings: Partial<ThemeSettings>) => Promise<void>;
   isLoading: boolean;
+  isThemeModalOpen: boolean;
+  setThemeModalOpen: (open: boolean) => void;
 }
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
@@ -21,6 +23,7 @@ interface ThemeProviderProps {
 export function ThemeProvider({ children, user }: ThemeProviderProps) {
   const [theme, setThemeState] = useState<ThemeSettings>(DEFAULT_THEME);
   const [isLoading, setIsLoading] = useState(true);
+  const [isThemeModalOpen, setThemeModalOpen] = useState(false);
 
   // 초기 테마 로드
   useEffect(() => {
@@ -64,7 +67,7 @@ export function ThemeProvider({ children, user }: ThemeProviderProps) {
   }, [theme, user]);
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, isLoading }}>
+    <ThemeContext.Provider value={{ theme, setTheme, isLoading, isThemeModalOpen, setThemeModalOpen }}>
       {children}
     </ThemeContext.Provider>
   );

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from "react";
 import { cn } from "@/lib/utils";
+import { useTheme } from "./ThemeProvider";
 
 interface TypingAreaProps {
     initialContent?: string;
@@ -18,6 +19,7 @@ export function TypingArea({
     fontSize = 24,
     fontColor = "#374151",
 }: TypingAreaProps) {
+    const { isThemeModalOpen } = useTheme();
     // 줄바꿈을 공백으로 변환 (input 태그는 줄바꿈 입력 불가)
     const normalizeContent = (text: string) => text.replace(/\s+/g, ' ').trim();
     const [input, setInput] = useState("");
@@ -162,11 +164,18 @@ export function TypingArea({
         }
     }, [updateCursorPosition, fontFamily]);
 
-    // fontFamily, fontSize 변경 시 커서 위치 재계산
+    // 테마 모달이 닫힐 때 커서 위치 재계산
     useEffect(() => {
-        const timer = setTimeout(updateCursorPosition, 100);
-        return () => clearTimeout(timer);
-    }, [fontFamily, fontSize, updateCursorPosition]);
+        if (!isThemeModalOpen) {
+            // 모달이 닫히면 CSS 트랜지션 완료 후 커서 위치 재계산
+            const timer = setTimeout(() => {
+                requestAnimationFrame(() => {
+                    updateCursorPosition();
+                });
+            }, 250);
+            return () => clearTimeout(timer);
+        }
+    }, [isThemeModalOpen, updateCursorPosition]);
 
     // 공백 문자 정규화 함수: 줄바꿈 포함 모든 공백을 일반 공백으로 변환
     const normalizeSpaces = (text: string) => text.replace(/\s+/g, ' ').trim();
@@ -336,8 +345,8 @@ export function TypingArea({
                         </span>
                     );
                 })}
-                {/* 커서 */}
-                {cursorStyle && (
+                {/* 커서 - 테마 모달이 열려있으면 숨김 */}
+                {cursorStyle && !isThemeModalOpen && (
                     <span
                         className="absolute w-0.5 bg-blue-500 animate-pulse"
                         style={{
