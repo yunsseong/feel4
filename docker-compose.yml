@@ -26,13 +26,12 @@ services:
       - feel4-network
     restart: always
 
-  # Production backend
+  # Production backend (default)
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
     container_name: feel4-backend
-    profiles: ["prod"]
     ports:
       - "3201:3201"
     environment:
