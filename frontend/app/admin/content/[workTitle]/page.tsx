@@ -1,6 +1,6 @@
 import WorkDetailClient from './WorkDetailClient';
 
-export function generateStaticParams() {
+export async function generateStaticParams() {
   return [];
 }
 

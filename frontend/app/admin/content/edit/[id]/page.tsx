@@ -1,6 +1,6 @@
 import EditContentClient from './EditContentClient';
 
-export function generateStaticParams() {
+export async function generateStaticParams() {
   return [];
 }
 
