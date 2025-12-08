@@ -209,3 +209,43 @@
 .animate-shake {
   animation: shake 0.2s ease-in-out;
 }
+
+/* 폰트 로딩 상태 관리 */
+.fonts-loading {
+  opacity: 0;
+}
+
+.fonts-ready {
+  opacity: 1;
+  transition: opacity 0.15s ease-out;
+}
+
+/* 폰트 로딩 스피너 */
+#font-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--background);
+  transition: opacity 0.15s ease-out;
+}
+
+#font-loader.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+#font-loader .spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid var(--muted);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
