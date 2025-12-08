@@ -73,13 +73,6 @@ JWT_SECRET=your-jwt-secret
 FRONTEND_URL=http://localhost:3200
 ```
 
-### 성경 데이터 시드
-
-```bash
-cd backend
-npm run seed:bible
-```
-
 ### 모바일 빌드
 
 ```bash
