@@ -364,7 +364,7 @@ export default function AdminContentPage() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => router.push(`/admin/content/edit/${section.id}`)}>
+                            <DropdownMenuItem onClick={() => router.push(`/admin/content/edit?id=${section.id}`)}>
                               <Pencil className="mr-2 h-4 w-4" />
                               편집
                             </DropdownMenuItem>

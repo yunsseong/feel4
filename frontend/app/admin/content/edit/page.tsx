@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -35,10 +35,10 @@ const contentTypeConfig = {
   essay: { label: '수필', icon: FileText },
 };
 
-export default function EditContentClient() {
+function EditContentForm() {
   const router = useRouter();
-  const params = useParams();
-  const id = params.id as string;
+  const searchParams = useSearchParams();
+  const id = searchParams.get('id');
 
   const [formData, setFormData] = useState({
     contentType: 'novel' as 'bible' | 'novel' | 'poem' | 'essay',
@@ -61,6 +61,9 @@ export default function EditContentClient() {
   useEffect(() => {
     if (id) {
       loadContent();
+    } else {
+      setError('콘텐츠 ID가 없습니다');
+      setLoading(false);
     }
   }, [id]);
 
@@ -438,5 +441,23 @@ export default function EditContentClient() {
         </div>
       </form>
     </div>
+  );
+}
+
+export default function EditContentPage() {
+  return (
+    <Suspense fallback={
+      <div className="space-y-6">
+        <div className="flex items-center gap-4">
+          <Skeleton className="h-10 w-10 rounded-md" />
+          <div className="space-y-2">
+            <Skeleton className="h-7 w-48" />
+            <Skeleton className="h-4 w-64" />
+          </div>
+        </div>
+      </div>
+    }>
+      <EditContentForm />
+    </Suspense>
   );
 }
