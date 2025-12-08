@@ -38,10 +38,10 @@ export function TypingArea({
         const containerEl = containerRef.current;
         if (!containerEl) return;
 
-        // 커서 높이를 글자 높이의 80%로 설정하고 중앙 정렬
+        // 커서 높이를 글자 높이와 동일하게 설정
         const getCursorStyle = (charRect: DOMRect, containerRect: DOMRect, useRight = false) => {
-            const cursorHeight = charRect.height * 0.8;
-            const topOffset = (charRect.height - cursorHeight) / 2;
+            const cursorHeight = charRect.height;
+            const topOffset = 0;
             return {
                 left: (useRight ? charRect.right : charRect.left) - containerRect.left,
                 top: charRect.top - containerRect.top + topOffset,
