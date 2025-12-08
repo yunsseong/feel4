@@ -162,11 +162,11 @@ export function TypingArea({
         }
     }, [updateCursorPosition, fontFamily]);
 
-    // fontFamily 변경 시 커서 위치 재계산
+    // fontFamily, fontSize 변경 시 커서 위치 재계산
     useEffect(() => {
         const timer = setTimeout(updateCursorPosition, 100);
         return () => clearTimeout(timer);
-    }, [fontFamily, updateCursorPosition]);
+    }, [fontFamily, fontSize, updateCursorPosition]);
 
     // 공백 문자 정규화 함수: 줄바꿈 포함 모든 공백을 일반 공백으로 변환
     const normalizeSpaces = (text: string) => text.replace(/\s+/g, ' ').trim();
