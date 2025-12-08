@@ -8,10 +8,10 @@ export interface ThemeSettings {
 }
 
 export const DEFAULT_THEME: ThemeSettings = {
-  fontFamily: 'Noto Serif KR',
-  fontSize: 24,
+  fontFamily: 'Nanum Myeongjo',
+  fontSize: 36,
   fontColor: '#374151',
-  backgroundColor: '#FFFEF5',
+  backgroundColor: '#FFFFFF',
 };
 
 // 상업적 무료 사용 가능한 예쁜 한글 폰트 (Google Fonts)

@@ -29,15 +29,15 @@ export class User {
   createdAt: Date;
 
   // Theme settings
-  @Column({ name: 'font_family', default: 'Noto Serif KR' })
+  @Column({ name: 'font_family', default: 'Nanum Myeongjo' })
   fontFamily: string;
 
-  @Column({ name: 'font_size', default: 24 })
+  @Column({ name: 'font_size', default: 36 })
   fontSize: number;
 
   @Column({ name: 'font_color', default: '#374151' })
   fontColor: string;
 
-  @Column({ name: 'background_color', default: '#FFFEF5' })
+  @Column({ name: 'background_color', default: '#FFFFFF' })
   backgroundColor: string;
 }

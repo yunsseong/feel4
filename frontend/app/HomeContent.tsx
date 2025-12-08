@@ -176,9 +176,7 @@ function HomeContentInner({ initialProfile }: HomeContentProps) {
       </div>
 
       {/* 푸터 영역 - 고정 높이 */}
-      <footer className="h-12 flex items-center justify-center shrink-0">
-        <span className="text-xs text-muted-foreground">필사의 감동을 느껴보세요.</span>
-      </footer>
+      <footer className="h-12 shrink-0" />
 
       {/* 작품 선택 모달 */}
       {showWorkSelector && selectedType && (
