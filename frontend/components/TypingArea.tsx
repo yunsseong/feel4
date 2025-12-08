@@ -293,10 +293,38 @@ export function TypingArea({
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        // 마지막 글자까지 입력 완료 후 스페이스바나 엔터 누르면 즉시 다음으로
-        if ((e.key === " " || e.key === "Enter") && normalizeText(input) === normalizeText(targetText)) {
+        // 스페이스바 처리: 다음 입력해야 할 글자가 공백이 아니면 무시
+        if (e.key === " ") {
+            const nextCharIndex = input.length;
+            const nextExpectedChar = targetText[nextCharIndex];
+
+            // 입력이 완료된 경우 (마지막 글자까지 입력 완료)
+            if (normalizeText(input) === normalizeText(targetText)) {
+                e.preventDefault();
+                // 자동 이동 타이머가 있으면 취소하고 즉시 이동
+                if (completionTimerRef.current) {
+                    clearTimeout(completionTimerRef.current);
+                    completionTimerRef.current = null;
+                }
+                if (onComplete && startTimeRef.current) {
+                    const endTime = Date.now();
+                    const durationMin = (endTime - startTimeRef.current) / 60000;
+                    const cpm = Math.round(targetText.length / durationMin);
+                    onComplete({ cpm, accuracy: 100 });
+                }
+                return;
+            }
+
+            // 다음 글자가 공백이 아니면 스페이스바 무시
+            if (nextExpectedChar && !/\s/.test(nextExpectedChar)) {
+                e.preventDefault();
+                return;
+            }
+        }
+
+        // 엔터키 처리: 입력 완료 시 즉시 다음으로
+        if (e.key === "Enter" && normalizeText(input) === normalizeText(targetText)) {
             e.preventDefault();
-            // 자동 이동 타이머가 있으면 취소하고 즉시 이동
             if (completionTimerRef.current) {
                 clearTimeout(completionTimerRef.current);
                 completionTimerRef.current = null;
