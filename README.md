@@ -18,7 +18,7 @@
 
 | 구분 | 기술 |
 |------|------|
-| Frontend | Next.js 15, React 19, Tailwind CSS |
+| Frontend | Next.js 16, React 19, Tailwind CSS |
 | Backend | NestJS 11, TypeORM |
 | Database | PostgreSQL 16 |
 | Auth | Google OAuth (Passport.js) |
