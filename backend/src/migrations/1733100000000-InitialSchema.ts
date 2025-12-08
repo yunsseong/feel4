@@ -6,10 +6,18 @@ export class InitialSchema1733100000000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Create enum types
     await queryRunner.query(`
-      CREATE TYPE "user_role_enum" AS ENUM('user', 'admin')
+      DO $$ BEGIN
+        CREATE TYPE "users_role_enum" AS ENUM('user', 'admin');
+      EXCEPTION
+        WHEN duplicate_object THEN null;
+      END $$;
     `);
     await queryRunner.query(`
-      CREATE TYPE "content_type_enum" AS ENUM('bible', 'novel', 'poem', 'essay')
+      DO $$ BEGIN
+        CREATE TYPE "content_type_enum" AS ENUM('bible', 'novel', 'poem', 'essay');
+      EXCEPTION
+        WHEN duplicate_object THEN null;
+      END $$;
     `);
 
     // Create users table
@@ -100,6 +108,6 @@ export class InitialSchema1733100000000 implements MigrationInterface {
     await queryRunner.query(`DROP TABLE IF EXISTS "bible"`);
     await queryRunner.query(`DROP TABLE IF EXISTS "users"`);
     await queryRunner.query(`DROP TYPE IF EXISTS "content_type_enum"`);
-    await queryRunner.query(`DROP TYPE IF EXISTS "user_role_enum"`);
+    await queryRunner.query(`DROP TYPE IF EXISTS "users_role_enum"`);
   }
 }
