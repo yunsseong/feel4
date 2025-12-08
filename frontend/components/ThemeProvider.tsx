@@ -1,8 +1,8 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { ThemeSettings, DEFAULT_THEME, GOOGLE_FONTS_URL } from '@/lib/theme';
-import { fetchThemeSettings, updateThemeSettings, getLocalThemeSettings, setLocalThemeSettings } from '@/lib/theme-api';
+import { ThemeSettings, DEFAULT_THEME } from '@/lib/theme';
+import { fetchThemeSettings, updateThemeSettings, getLocalThemeSettings, setLocalThemeSettings, getDeviceDefaultTheme } from '@/lib/theme-api';
 import { UserProfile } from '@/lib/api';
 
 interface ThemeContextValue {
@@ -21,22 +21,6 @@ interface ThemeProviderProps {
 export function ThemeProvider({ children, user }: ThemeProviderProps) {
   const [theme, setThemeState] = useState<ThemeSettings>(DEFAULT_THEME);
   const [isLoading, setIsLoading] = useState(true);
-  const [fontsLoaded, setFontsLoaded] = useState(false);
-
-  // Google Fonts 로드
-  useEffect(() => {
-    if (fontsLoaded) return;
-
-    const link = document.createElement('link');
-    link.href = GOOGLE_FONTS_URL;
-    link.rel = 'stylesheet';
-    link.onload = () => setFontsLoaded(true);
-    document.head.appendChild(link);
-
-    return () => {
-      document.head.removeChild(link);
-    };
-  }, [fontsLoaded]);
 
   // 초기 테마 로드
   useEffect(() => {
@@ -53,7 +37,7 @@ export function ThemeProvider({ children, user }: ThemeProviderProps) {
           setThemeState(localTheme);
         }
       } catch {
-        setThemeState(DEFAULT_THEME);
+        setThemeState(getDeviceDefaultTheme());
       } finally {
         setIsLoading(false);
       }

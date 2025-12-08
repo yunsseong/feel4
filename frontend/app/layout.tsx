@@ -8,10 +8,12 @@ import { KeyboardDismiss } from "@/components/KeyboardDismiss";
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-sans",
-  display: 'swap', // Improve loading performance
+  display: 'swap',
   preload: true,
 });
-// Gowun Batang은 CSS @font-face로 로드됨 (globals.css)
+
+// Google Fonts URL for Korean fonts
+const GOOGLE_FONTS_URL = "https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700&family=Nanum+Myeongjo:wght@400;700&family=Gowun+Dodum:wght@400;700&family=Hahmlet:wght@400;700&family=Maruburi:wght@400;700&family=Nanum+Pen+Script:wght@400;700&family=Gamja+Flower:wght@400;700&display=swap";
 
 export const metadata: Metadata = {
   title: "필사",
@@ -47,6 +49,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
+      <head>
+        {/* Preload Korean fonts from Google Fonts */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href={GOOGLE_FONTS_URL} rel="stylesheet" />
+      </head>
       <body className={cn(inter.variable, "font-sans antialiased bg-background text-foreground")}>
         <CapacitorProvider>
           <KeyboardDismiss />
