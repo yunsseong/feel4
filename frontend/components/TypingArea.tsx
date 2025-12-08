@@ -221,6 +221,13 @@ export function TypingArea({
         }, 200);
     }, [isCompleted, onComplete, targetText.length]);
 
+    // input 변경 시 완료 체크 (한글 조합 중에도 길이가 같으면 체크)
+    useEffect(() => {
+        if (input.length === targetText.length && normalizeText(input) === normalizeText(targetText)) {
+            triggerCompletion();
+        }
+    }, [input, targetText, triggerCompletion]);
+
     // 공백 문자 정규화 함수: 줄바꿈 포함 모든 공백을 일반 공백으로 변환
     const normalizeSpaces = (text: string) => text.replace(/\s+/g, ' ').trim();
 
