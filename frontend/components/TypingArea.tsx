@@ -6,9 +6,18 @@ import { cn } from "@/lib/utils";
 interface TypingAreaProps {
     initialContent?: string;
     onComplete?: (stats: { cpm: number; accuracy: number }) => void;
+    fontFamily?: string;
+    fontSize?: number;
+    fontColor?: string;
 }
 
-export function TypingArea({ initialContent = "태초에 하나님이 천지를 창조하시니라", onComplete }: TypingAreaProps) {
+export function TypingArea({
+    initialContent = "태초에 하나님이 천지를 창조하시니라",
+    onComplete,
+    fontFamily = "Noto Serif KR",
+    fontSize = 24,
+    fontColor = "#374151",
+}: TypingAreaProps) {
     // 줄바꿈을 공백으로 변환 (input 태그는 줄바꿈 입력 불가)
     const normalizeContent = (text: string) => text.replace(/\s+/g, ' ').trim();
     const [input, setInput] = useState("");
@@ -81,6 +90,14 @@ export function TypingArea({ initialContent = "태초에 하나님이 천지를 
         inputRef.current?.focus();
     }, [initialContent]);
 
+    // 페이지 로드 시 자동 포커스
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            inputRef.current?.focus();
+        }, 0);
+        return () => clearTimeout(timer);
+    }, []);
+
     // refs 준비 완료 후 커서 위치 초기화
     useLayoutEffect(() => {
         if (refsReady) {
@@ -98,6 +115,22 @@ export function TypingArea({ initialContent = "태초에 하나님이 천지를 
         window.addEventListener("resize", updateCursorPosition);
         return () => window.removeEventListener("resize", updateCursorPosition);
     }, [updateCursorPosition]);
+
+    // 폰트 로드 완료 후 커서 위치 재계산
+    useEffect(() => {
+        if (document.fonts && document.fonts.ready) {
+            document.fonts.ready.then(() => {
+                // 폰트 로드 완료 후 약간의 딜레이를 주고 커서 위치 업데이트
+                setTimeout(updateCursorPosition, 50);
+            });
+        }
+    }, [updateCursorPosition, fontFamily]);
+
+    // fontFamily 변경 시 커서 위치 재계산
+    useEffect(() => {
+        const timer = setTimeout(updateCursorPosition, 100);
+        return () => clearTimeout(timer);
+    }, [fontFamily, updateCursorPosition]);
 
     // 공백 문자 정규화 함수: 줄바꿈 포함 모든 공백을 일반 공백으로 변환
     const normalizeSpaces = (text: string) => text.replace(/\s+/g, ' ').trim();
@@ -211,7 +244,11 @@ export function TypingArea({ initialContent = "태초에 하나님이 천지를 
             {/* 텍스트 컨테이너 */}
             <div
                 ref={containerRef}
-                className="relative w-full text-lg md:text-3xl lg:text-4xl font-serif leading-relaxed tracking-wide text-center break-keep"
+                className="relative w-full leading-relaxed tracking-wide text-center break-keep transition-all duration-200"
+                style={{
+                    fontFamily: fontFamily,
+                    fontSize: `${fontSize}px`,
+                }}
             >
                 {/* 각 글자를 개별적으로 렌더링 */}
                 {targetText.split("").map((targetChar, index) => {
@@ -228,20 +265,22 @@ export function TypingArea({ initialContent = "태초에 하나님이 천지를 
                     };
                     const isCorrect = normalizeChar(inputChar) === normalizeChar(targetChar);
 
-                    // 스타일 결정
-                    let charClass = "text-gray-300"; // 기본: 아직 입력 안 됨
+                    // 스타일 결정: 색상과 배경 계산
+                    // 아직 입력 안 된 글자는 테마 글자색의 40% 투명도로 표시
+                    let charStyle: React.CSSProperties = { color: fontColor, opacity: 0.35 };
+                    let charClass = "";
+
                     if (isTyped) {
                         if (isCurrentlyTyping) {
-                            // 현재 조합 중인 글자 - 검정색으로 표시 (에러 체크 안 함)
-                            charClass = "text-foreground";
+                            // 현재 조합 중인 글자 - 테마 색상으로 표시 (에러 체크 안 함)
+                            charStyle = { color: fontColor, opacity: 1 };
                         } else if (isCorrect) {
                             // 완료된 글자 - 맞음
-                            charClass = "text-foreground";
+                            charStyle = { color: fontColor, opacity: 1 };
                         } else {
                             // 완료된 글자 - 틀림
-                            charClass = "text-red-500 bg-red-100";
-                            // 디버그 로그 (정규화 전후 비교)
-                            console.log(`틀림 감지: index=${index}, inputChar='${inputChar}' (U+${inputChar?.charCodeAt(0).toString(16).toUpperCase()}) → '${normalizeChar(inputChar)}', targetChar='${targetChar}' (U+${targetChar?.charCodeAt(0).toString(16).toUpperCase()}) → '${normalizeChar(targetChar)}'`);
+                            charStyle = { color: '#EF4444', opacity: 1 };
+                            charClass = "bg-red-100";
                         }
                     }
 
@@ -255,6 +294,7 @@ export function TypingArea({ initialContent = "태초에 하나님이 천지를 
                                 }
                             }}
                             className={cn("transition-colors duration-100", charClass)}
+                            style={charStyle}
                         >
                             {isTyped ? inputChar : targetChar}
                         </span>

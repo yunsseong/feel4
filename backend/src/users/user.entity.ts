@@ -27,4 +27,17 @@ export class User {
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
+
+  // Theme settings
+  @Column({ name: 'font_family', default: 'Noto Serif KR' })
+  fontFamily: string;
+
+  @Column({ name: 'font_size', default: 24 })
+  fontSize: number;
+
+  @Column({ name: 'font_color', default: '#374151' })
+  fontColor: string;
+
+  @Column({ name: 'background_color', default: '#FFFEF5' })
+  backgroundColor: string;
 }

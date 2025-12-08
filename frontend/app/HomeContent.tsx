@@ -4,9 +4,11 @@ import { useEffect, useState } from "react";
 import { TypingArea } from "@/components/TypingArea";
 import { Header } from "@/components/Header";
 import { ContentTypeTabs, ContentType, CONTENT_TYPE_LABELS } from "@/components/ContentTypeTabs";
+import { ThemeProvider, useTheme } from "@/components/ThemeProvider";
 import { cn } from "@/lib/utils";
 import { UserProfile } from "@/lib/api";
-import { apiFetch, apiFetchJson } from "@/lib/api-config";
+import { apiFetchJson } from "@/lib/api-config";
+import { getMutedForeground, getMutedBackground, getBorderColor, getColorBrightness } from "@/lib/theme";
 
 interface ContentData {
   contentType: ContentType;
@@ -29,7 +31,8 @@ interface HomeContentProps {
   initialProfile: UserProfile | null;
 }
 
-export function HomeContent({ initialProfile }: HomeContentProps) {
+function HomeContentInner({ initialProfile }: HomeContentProps) {
+  const { theme } = useTheme();
   const [content, setContent] = useState<ContentData | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedType, setSelectedType] = useState<ContentType | null>(null);
@@ -113,8 +116,23 @@ export function HomeContent({ initialProfile }: HomeContentProps) {
     }
   };
 
+  // 테마 기반 CSS 변수 계산
+  const isDarkBg = getColorBrightness(theme.backgroundColor) < 128;
+  const themeStyles = {
+    backgroundColor: theme.backgroundColor,
+    color: theme.fontColor,
+    '--foreground': theme.fontColor,
+    '--background': theme.backgroundColor,
+    '--muted-foreground': getMutedForeground(theme.backgroundColor),
+    '--muted': getMutedBackground(theme.backgroundColor),
+    '--border': getBorderColor(theme.backgroundColor),
+  } as React.CSSProperties;
+
   return (
-    <main className="h-screen flex flex-col overflow-hidden pt-safe">
+    <main
+      className="h-screen flex flex-col overflow-hidden pt-safe transition-colors duration-200"
+      style={themeStyles}
+    >
       {/* 헤더 영역 - 고정 높이 */}
       <Header initialProfile={initialProfile} />
 
@@ -144,7 +162,14 @@ export function HomeContent({ initialProfile }: HomeContentProps) {
         {loading ? (
           <div className="w-8 h-8 border-2 border-muted-foreground/30 border-t-foreground rounded-full animate-spin" />
         ) : content ? (
-          <TypingArea key={content.displayReference} initialContent={content.content} onComplete={handleComplete} />
+          <TypingArea
+            key={content.displayReference}
+            initialContent={content.content}
+            onComplete={handleComplete}
+            fontFamily={theme.fontFamily}
+            fontSize={theme.fontSize}
+            fontColor={theme.fontColor}
+          />
         ) : (
           <div className="text-muted-foreground">콘텐츠를 불러올 수 없습니다.</div>
         )}
@@ -162,7 +187,11 @@ export function HomeContent({ initialProfile }: HomeContentProps) {
           onClick={() => setShowWorkSelector(false)}
         >
           <div
-            className="bg-background rounded-lg p-6 max-w-md w-full max-h-[70vh] overflow-y-auto shadow-xl"
+            className="rounded-lg p-6 max-w-md w-full max-h-[70vh] overflow-y-auto shadow-xl mx-4"
+            style={{
+              backgroundColor: isDarkBg ? '#374151' : '#FFFFFF',
+              color: theme.fontColor,
+            }}
             onClick={(e) => e.stopPropagation()}
           >
             <h2 className="text-lg font-semibold mb-4">
@@ -173,15 +202,26 @@ export function HomeContent({ initialProfile }: HomeContentProps) {
                 <button
                   key={work.workTitle}
                   onClick={() => selectWork(work)}
-                  className={cn(
-                    "w-full text-left px-4 py-3 rounded-md transition-colors",
-                    "hover:bg-muted",
-                    content && work.workTitle === content.workTitle && "bg-muted"
-                  )}
+                  className="w-full text-left px-4 py-3 rounded-md transition-colors"
+                  style={{
+                    backgroundColor: content && work.workTitle === content.workTitle
+                      ? (isDarkBg ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)')
+                      : 'transparent',
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!(content && work.workTitle === content.workTitle)) {
+                      e.currentTarget.style.backgroundColor = isDarkBg ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!(content && work.workTitle === content.workTitle)) {
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                    }
+                  }}
                 >
                   <div className="font-medium">{work.workTitle}</div>
                   {work.author && (
-                    <div className="text-sm text-muted-foreground">
+                    <div className="text-sm" style={{ opacity: 0.6 }}>
                       {work.author}
                       {work.publicationYear && ` (${work.publicationYear})`}
                     </div>
@@ -191,7 +231,10 @@ export function HomeContent({ initialProfile }: HomeContentProps) {
             </div>
             <button
               onClick={() => setShowWorkSelector(false)}
-              className="mt-4 w-full py-2 text-sm text-muted-foreground hover:text-foreground"
+              className="mt-4 w-full py-2 text-sm transition-colors"
+              style={{ opacity: 0.6 }}
+              onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
+              onMouseLeave={(e) => e.currentTarget.style.opacity = '0.6'}
             >
               닫기
             </button>
@@ -199,5 +242,14 @@ export function HomeContent({ initialProfile }: HomeContentProps) {
         </div>
       )}
     </main>
+  );
+}
+
+// ThemeProvider로 감싸는 wrapper 컴포넌트
+export function HomeContent({ initialProfile }: HomeContentProps) {
+  return (
+    <ThemeProvider user={initialProfile}>
+      <HomeContentInner initialProfile={initialProfile} />
+    </ThemeProvider>
   );
 }
