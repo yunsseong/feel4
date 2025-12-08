@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Icon Generator</title>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <script>
+        const sizes = [
+            { name: 'mdpi', size: 48 },
+            { name: 'hdpi', size: 72 },
+            { name: 'xhdpi', size: 96 },
+            { name: 'xxhdpi', size: 144 },
+            { name: 'xxxhdpi', size: 192 }
+        ];
+
+        function generateIcon(emoji, size, filename) {
+            const canvas = document.getElementById('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+
+            // White background
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0, 0, size, size);
+
+            // Draw emoji
+            ctx.font = `${size * 0.7}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(emoji, size / 2, size / 2);
+
+            // Download
+            canvas.toBlob(blob => {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                a.click();
+                URL.revokeObjectURL(url);
+            });
+        }
+
+        // Generate all sizes
+        sizes.forEach((config, index) => {
+            setTimeout(() => {
+                generateIcon('🌸', config.size, `ic_launcher_${config.name}.png`);
+            }, index * 500);
+        });
+
+        document.write('<p>Icon generation started. Check your downloads.</p>');
+        document.write('<p>Generated sizes: mdpi(48), hdpi(72), xhdpi(96), xxhdpi(144), xxxhdpi(192)</p>');
+    </script>
+</body>
+</html>

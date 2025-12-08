@@ -1,0 +1,10 @@
+<svg width="1024" height="1024" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1024" height="1024" fill="#FFFFFF"/>
+  <text
+    x="512"
+    y="700"
+    font-size="700"
+    text-anchor="middle"
+    dominant-baseline="middle"
+    font-family="Arial, sans-serif">🌸</text>
+</svg>

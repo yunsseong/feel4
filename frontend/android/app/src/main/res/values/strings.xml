@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">필사</string>
+    <string name="title_activity_main">필사</string>
+    <string name="package_name">com.feel4.app</string>
+    <string name="custom_url_scheme">com.feel4.app</string>
+</resources>
