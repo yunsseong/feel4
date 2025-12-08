@@ -44,15 +44,10 @@ cd feel4
 cp .env.example .env
 # .env 파일에 필요한 값 입력
 
-# Docker로 DB 실행
-docker-compose up -d postgres
+# Docker로 Backend + DB + Redis 실행
+docker-compose up -d
 
-# Backend 실행
-cd backend
-npm install
-npm run start:dev
-
-# Frontend 실행 (새 터미널)
+# Frontend 실행
 cd frontend
 npm install
 npm run dev
