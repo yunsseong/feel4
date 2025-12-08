@@ -4,6 +4,7 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import { CapacitorProvider } from "@/components/CapacitorProvider";
 import { KeyboardDismiss } from "@/components/KeyboardDismiss";
+import { FontReadyProvider } from "@/components/FontReadyProvider";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -56,10 +57,12 @@ export default function RootLayout({
         <link href={GOOGLE_FONTS_URL} rel="stylesheet" />
       </head>
       <body className={cn(inter.variable, "font-sans antialiased bg-background text-foreground")}>
-        <CapacitorProvider>
-          <KeyboardDismiss />
-          {children}
-        </CapacitorProvider>
+        <FontReadyProvider>
+          <CapacitorProvider>
+            <KeyboardDismiss />
+            {children}
+          </CapacitorProvider>
+        </FontReadyProvider>
       </body>
     </html>
   );
