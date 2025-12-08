@@ -34,6 +34,8 @@ export function TypingArea({
     const [isComposing, setIsComposing] = useState(false);
     const [confirmedInput, setConfirmedInput] = useState(""); // 조합 완료된 입력
     const [cursorVisible, setCursorVisible] = useState(true); // 커서 표시 여부
+    const [isCompleted, setIsCompleted] = useState(false); // 입력 완료 여부
+    const completionTimerRef = useRef<NodeJS.Timeout | null>(null);
 
     // 커서 위치 계산 함수
     const updateCursorPosition = useCallback(() => {
@@ -90,6 +92,11 @@ export function TypingArea({
         setCursorStyle(null);
         setConfirmedInput("");
         setIsComposing(false);
+        setIsCompleted(false);
+        if (completionTimerRef.current) {
+            clearTimeout(completionTimerRef.current);
+            completionTimerRef.current = null;
+        }
         inputRef.current?.focus();
     }, [initialContent]);
 
@@ -199,6 +206,21 @@ export function TypingArea({
         }
     }, [isThemeModalOpen, updateCursorPosition]);
 
+    // 입력 완료 감지 및 자동 다음 문장 이동
+    const triggerCompletion = useCallback(() => {
+        if (isCompleted || !onComplete || !startTime) return;
+
+        setIsCompleted(true);
+        const endTime = Date.now();
+        const durationMin = (endTime - startTime) / 60000;
+        const cpm = Math.round(targetText.length / durationMin);
+
+        // 200ms 후 자동으로 다음으로 이동
+        completionTimerRef.current = setTimeout(() => {
+            onComplete({ cpm, accuracy: 100 });
+        }, 200);
+    }, [isCompleted, onComplete, startTime, targetText.length]);
+
     // 공백 문자 정규화 함수: 줄바꿈 포함 모든 공백을 일반 공백으로 변환
     const normalizeSpaces = (text: string) => text.replace(/\s+/g, ' ').trim();
 
@@ -234,12 +256,7 @@ export function TypingArea({
 
         // 조합 중이 아닐 때 완료 체크 (영문, 숫자, 공백, 따옴표 정규화)
         if (!isComposing && normalizeText(val) === normalizeText(targetText)) {
-            if (onComplete && startTime) {
-                const endTime = Date.now();
-                const durationMin = (endTime - startTime) / 60000;
-                const cpm = Math.round(targetText.length / durationMin);
-                onComplete({ cpm, accuracy: 100 });
-            }
+            triggerCompletion();
         }
     };
 
@@ -264,20 +281,19 @@ export function TypingArea({
         setConfirmedInput(val);
 
         if (normalizeText(val) === normalizeText(targetText)) {
-            // Completed
-            if (onComplete && startTime) {
-                const endTime = Date.now();
-                const durationMin = (endTime - startTime) / 60000;
-                const cpm = Math.round(targetText.length / durationMin);
-                onComplete({ cpm, accuracy: 100 });
-            }
+            triggerCompletion();
         }
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        // 마지막 글자까지 입력 완료 후 스페이스바나 엔터 누르면 다음으로
+        // 마지막 글자까지 입력 완료 후 스페이스바나 엔터 누르면 즉시 다음으로
         if ((e.key === " " || e.key === "Enter") && normalizeText(input) === normalizeText(targetText)) {
             e.preventDefault();
+            // 자동 이동 타이머가 있으면 취소하고 즉시 이동
+            if (completionTimerRef.current) {
+                clearTimeout(completionTimerRef.current);
+                completionTimerRef.current = null;
+            }
             if (onComplete && startTime) {
                 const endTime = Date.now();
                 const durationMin = (endTime - startTime) / 60000;
