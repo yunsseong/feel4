@@ -25,7 +25,7 @@ export class AuthController {
             sameSite: 'lax', // lax면 충분 (같은 메인 도메인)
             maxAge: 7 * 24 * 60 * 60 * 1000, // 7일
             path: '/',
-            domain: isProduction ? '.stellax.cc' : undefined, // 서브도메인 간 쿠키 공유
+            domain: isProduction ? '.maesil.io' : undefined, // 서브도메인 간 쿠키 공유
         });
 
         // 모바일 앱용: URL에 토큰 포함 (앱에서 저장 후 제거)
@@ -41,7 +41,7 @@ export class AuthController {
             secure: isProduction,
             sameSite: 'lax',
             path: '/',
-            domain: isProduction ? '.stellax.cc' : undefined,
+            domain: isProduction ? '.maesil.io' : undefined,
         });
         res.json({ message: 'Logged out successfully' });
     }
