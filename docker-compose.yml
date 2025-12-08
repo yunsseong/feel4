@@ -92,6 +92,33 @@ services:
       - /usr/src/app/node_modules
     command: npm run start:dev
 
+  # PostgreSQL Backup Service (runs daily at 3:00 AM)
+  backup:
+    build:
+      context: ./backup
+      dockerfile: Dockerfile
+    container_name: feel4-backup
+    profiles: ["prod"]
+    environment:
+      # PostgreSQL connection
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-feel4}
+      # R2 configuration (S3-compatible)
+      AWS_ACCESS_KEY_ID: ${R2_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${R2_SECRET_ACCESS_KEY}
+      RESTIC_REPOSITORY: s3:https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com/${R2_BUCKET_NAME}
+      RESTIC_PASSWORD: ${RESTIC_PASSWORD}
+      # Timezone
+      TZ: Asia/Seoul
+    depends_on:
+      - postgres
+    networks:
+      - feel4-network
+    restart: always
+
 networks:
   feel4-network:
     driver: bridge
