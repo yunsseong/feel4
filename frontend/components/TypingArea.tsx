@@ -33,6 +33,7 @@ export function TypingArea({
     const [refsReady, setRefsReady] = useState(false);
     const [isComposing, setIsComposing] = useState(false);
     const [confirmedInput, setConfirmedInput] = useState(""); // 조합 완료된 입력
+    const [cursorVisible, setCursorVisible] = useState(true); // 커서 표시 여부
 
     // 커서 위치 계산 함수
     const updateCursorPosition = useCallback(() => {
@@ -164,13 +165,17 @@ export function TypingArea({
         }
     }, [updateCursorPosition, fontFamily]);
 
-    // 테마 모달이 닫힐 때 커서 위치 재계산
+    // 테마 모달 열림/닫힘 시 커서 처리
     useEffect(() => {
-        if (!isThemeModalOpen) {
-            // 모달이 닫히면 CSS 트랜지션 완료 후 커서 위치 재계산
+        if (isThemeModalOpen) {
+            // 모달이 열리면 커서 숨김
+            setCursorVisible(false);
+        } else {
+            // 모달이 닫히면 CSS 트랜지션 완료 후 커서 위치 재계산 후 표시
             const timer = setTimeout(() => {
                 requestAnimationFrame(() => {
                     updateCursorPosition();
+                    setCursorVisible(true);
                 });
             }, 250);
             return () => clearTimeout(timer);
@@ -345,8 +350,8 @@ export function TypingArea({
                         </span>
                     );
                 })}
-                {/* 커서 - 테마 모달이 열려있으면 숨김 */}
-                {cursorStyle && !isThemeModalOpen && (
+                {/* 커서 - 위치 계산 완료 전까지 숨김 */}
+                {cursorStyle && cursorVisible && (
                     <span
                         className="absolute w-0.5 bg-blue-500 animate-pulse"
                         style={{
