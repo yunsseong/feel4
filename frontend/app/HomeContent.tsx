@@ -6,6 +6,7 @@ import { Header } from "@/components/Header";
 import { ContentTypeTabs, ContentType, CONTENT_TYPE_LABELS } from "@/components/ContentTypeTabs";
 import { cn } from "@/lib/utils";
 import { UserProfile } from "@/lib/api";
+import { apiFetch, apiFetchJson } from "@/lib/api-config";
 
 interface ContentData {
   contentType: ContentType;
@@ -37,15 +38,10 @@ export function HomeContent({ initialProfile }: HomeContentProps) {
 
   const fetchContent = async (contentType?: ContentType) => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-      const url = contentType
-        ? `${apiUrl}/typing/content?type=${contentType}`
-        : `${apiUrl}/typing/content`;
-      const res = await fetch(url);
-      if (!res.ok) {
-        throw new Error(`HTTP error: ${res.status}`);
-      }
-      const data = await res.json();
+      const path = contentType
+        ? `/typing/content?type=${contentType}`
+        : `/typing/content`;
+      const data = await apiFetchJson<ContentData>(path);
       setContent(data);
       setSelectedType(data.contentType);
     } catch (err) {
@@ -57,11 +53,7 @@ export function HomeContent({ initialProfile }: HomeContentProps) {
 
   const fetchWorks = async (contentType: ContentType) => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/typing/content/list?type=${contentType}`);
-      if (!res.ok) {
-        throw new Error(`HTTP error: ${res.status}`);
-      }
-      const data = await res.json();
+      const data = await apiFetchJson<Work[]>(`/typing/content/list?type=${contentType}`);
       setWorks(data);
     } catch (err) {
       console.error("Failed to fetch works", err);
@@ -71,7 +63,7 @@ export function HomeContent({ initialProfile }: HomeContentProps) {
   const selectWork = async (work: Work) => {
     if (!selectedType) return;
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/typing/content/set`, {
+      const data = await apiFetchJson<ContentData>(`/typing/content/set`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -81,10 +73,6 @@ export function HomeContent({ initialProfile }: HomeContentProps) {
           workTitle: work.workTitle,
         }),
       });
-      if (!res.ok) {
-        throw new Error(`HTTP error: ${res.status}`);
-      }
-      const data = await res.json();
       setContent(data);
       setShowWorkSelector(false);
     } catch (err) {
@@ -107,7 +95,7 @@ export function HomeContent({ initialProfile }: HomeContentProps) {
     if (!content) return;
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/typing/content/next`, {
+      const data = await apiFetchJson<ContentData>(`/typing/content/next`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -119,10 +107,6 @@ export function HomeContent({ initialProfile }: HomeContentProps) {
           section: content.section,
         }),
       });
-      if (!res.ok) {
-        throw new Error(`HTTP error: ${res.status}`);
-      }
-      const data = await res.json();
       setContent(data);
     } catch (err) {
       console.error("Failed to fetch next content", err);
@@ -130,7 +114,7 @@ export function HomeContent({ initialProfile }: HomeContentProps) {
   };
 
   return (
-    <main className="h-screen flex flex-col overflow-hidden">
+    <main className="h-screen flex flex-col overflow-hidden pt-safe">
       {/* 헤더 영역 - 고정 높이 */}
       <Header initialProfile={initialProfile} />
 

@@ -134,13 +134,69 @@
   * {
     @apply border-border outline-ring/50;
   }
+
+  html {
+    /* Prevent text size adjustment on iOS */
+    -webkit-text-size-adjust: 100%;
+    /* Smooth scrolling */
+    scroll-behavior: smooth;
+  }
+
   body {
     @apply bg-background text-foreground;
-    /* iOS Safe Area 지원 */
-    padding-top: env(safe-area-inset-top);
-    padding-right: env(safe-area-inset-right);
-    padding-bottom: env(safe-area-inset-bottom);
+    /* Safe Area는 컴포넌트 레벨에서 처리 */
+
+    /* Mobile optimization */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* Prevent pull-to-refresh on mobile */
+    overscroll-behavior-y: contain;
+    /* Touch action optimization */
+    touch-action: manipulation;
+  }
+
+  /* Safe Area 유틸리티 클래스 */
+  .pt-safe {
+    padding-top: max(env(safe-area-inset-top), 1.5rem);
+  }
+
+  .pb-safe {
+    padding-bottom: max(env(safe-area-inset-bottom), 1rem);
+  }
+
+  .pl-safe {
     padding-left: env(safe-area-inset-left);
+  }
+
+  .pr-safe {
+    padding-right: env(safe-area-inset-right);
+  }
+
+  /* Prevent iOS tap highlight */
+  button, a {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Better mobile input styling */
+  input, textarea, select {
+    font-size: 16px; /* Prevent zoom on iOS */
+  }
+
+  /* Native navigation gesture support */
+  @supports (-webkit-touch-callout: none) {
+    /* iOS edge swipe gesture - prevent conflicts with horizontal scrolling */
+    body {
+      /* Allow iOS back swipe gesture */
+      -webkit-overflow-scrolling: touch;
+    }
+  }
+
+  /* Android edge swipe optimization */
+  @media (max-width: 768px) {
+    .main-content {
+      /* Ensure proper touch handling for navigation gestures */
+      touch-action: pan-y;
+    }
   }
 }
 

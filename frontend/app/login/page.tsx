@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { getUserProfile } from "@/lib/api";
+import { saveToken } from "@/lib/mobile-auth";
+import { Capacitor } from "@capacitor/core";
 
 function LoginContent() {
     const router = useRouter();
@@ -13,9 +15,17 @@ function LoginContent() {
     useEffect(() => {
         const success = searchParams.get("success");
         const redirect = searchParams.get("redirect");
+        const token = searchParams.get("token");
 
         if (success === "true") {
-            // 백엔드에서 HttpOnly 쿠키로 토큰 설정됨
+            // 모바일 앱: URL에서 토큰 저장
+            if (Capacitor.isNativePlatform() && token) {
+                saveToken(token).then(() => {
+                    // URL에서 토큰 제거 (보안)
+                    window.history.replaceState({}, '', '/login?success=true');
+                });
+            }
+
             // 프로필 가져와서 캐시 및 리다이렉트
             getUserProfile().then((profile) => {
                 if (redirect && profile?.role === "admin") {
@@ -38,7 +48,7 @@ function LoginContent() {
         <div className="flex min-h-screen flex-col items-center justify-center p-4">
             <div className="w-full max-w-md space-y-8 text-center">
                 <div className="space-y-2">
-                    <h1 className="text-3xl font-bold tracking-tight">필사에 오신 것을 환영합니다</h1>
+                    <h1 className="text-3xl font-bold tracking-tight">필사에 오신 것을 환영합니다 🌸</h1>
                     <p className="text-muted-foreground">
                         로그인하시면 필사 진행 상황이 저장됩니다.
                     </p>

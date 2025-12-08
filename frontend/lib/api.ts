@@ -1,3 +1,6 @@
+import { Capacitor } from '@capacitor/core';
+import { saveToken, clearToken as clearMobileToken, getAuthFetchOptions } from './mobile-auth';
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export interface UserProfile {
@@ -69,9 +72,8 @@ export async function getUserProfile(): Promise<UserProfile | null> {
   if (cached) return cached;
 
   try {
-    const response = await fetch(`${API_URL}/users/me`, {
-      credentials: "include", // 쿠키 자동 전송
-    });
+    const authOptions = await getAuthFetchOptions();
+    const response = await fetch(`${API_URL}/users/me`, authOptions);
 
     if (!response.ok) {
       if (response.status === 401) {
@@ -93,21 +95,23 @@ export async function getUserProfile(): Promise<UserProfile | null> {
   }
 }
 
-export function clearProfileCache() {
+export async function clearProfileCache() {
   if (typeof localStorage !== "undefined") {
     localStorage.removeItem(PROFILE_CACHE_KEY);
   }
   deleteCookie(PROFILE_COOKIE_KEY);
+  await clearMobileToken(); // Clear mobile token storage
 }
 
 export async function logout(): Promise<void> {
   try {
+    const authOptions = await getAuthFetchOptions();
     await fetch(`${API_URL}/auth/logout`, {
+      ...authOptions,
       method: "POST",
-      credentials: "include",
     });
   } catch (error) {
     console.error("Logout failed:", error);
   }
-  clearProfileCache();
+  await clearProfileCache();
 }

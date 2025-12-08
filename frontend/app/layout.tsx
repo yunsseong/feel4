@@ -2,8 +2,15 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
+import { CapacitorProvider } from "@/components/CapacitorProvider";
+import { KeyboardDismiss } from "@/components/KeyboardDismiss";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-sans",
+  display: 'swap', // Improve loading performance
+  preload: true,
+});
 // Gowun Batang은 CSS @font-face로 로드됨 (globals.css)
 
 export const metadata: Metadata = {
@@ -41,7 +48,10 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body className={cn(inter.variable, "font-sans antialiased bg-background text-foreground")}>
-        {children}
+        <CapacitorProvider>
+          <KeyboardDismiss />
+          {children}
+        </CapacitorProvider>
       </body>
     </html>
   );
