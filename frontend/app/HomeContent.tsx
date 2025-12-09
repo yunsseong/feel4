@@ -32,7 +32,10 @@ interface HomeContentProps {
 }
 
 function HomeContentInner({ initialProfile }: HomeContentProps) {
-  const { theme } = useTheme();
+  const { theme, isEmbedded } = useTheme();
+
+  // iframe 임베딩 시 데모 모드: 사용자 정보 숨김
+  const profile = isEmbedded ? null : initialProfile;
   const [content, setContent] = useState<ContentData | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedType, setSelectedType] = useState<ContentType | null>(null);
@@ -134,7 +137,7 @@ function HomeContentInner({ initialProfile }: HomeContentProps) {
       style={themeStyles}
     >
       {/* 헤더 영역 - 고정 높이 */}
-      <Header initialProfile={initialProfile} />
+      <Header initialProfile={profile} />
 
       {/* 콘텐츠 타입 탭 영역 - 고정 높이 */}
       <ContentTypeTabs selectedType={selectedType} onTypeChange={handleTypeChange} />
