@@ -11,6 +11,7 @@ interface ThemeContextValue {
   isLoading: boolean;
   isThemeModalOpen: boolean;
   setThemeModalOpen: (open: boolean) => void;
+  isEmbedded: boolean;
 }
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
@@ -24,12 +25,25 @@ export function ThemeProvider({ children, user }: ThemeProviderProps) {
   const [theme, setThemeState] = useState<ThemeSettings>(DEFAULT_THEME);
   const [isLoading, setIsLoading] = useState(true);
   const [isThemeModalOpen, setThemeModalOpen] = useState(false);
+  const [isEmbedded, setIsEmbedded] = useState(false);
+
+  // iframe 임베딩 감지
+  useEffect(() => {
+    setIsEmbedded(window.self !== window.top);
+  }, []);
 
   // 초기 테마 로드
   useEffect(() => {
     const loadTheme = async () => {
       setIsLoading(true);
       try {
+        // iframe 임베딩 시 데모 모드: 기본 테마만 사용
+        if (isEmbedded) {
+          setThemeState(getDeviceDefaultTheme());
+          setIsLoading(false);
+          return;
+        }
+
         if (user) {
           // 로그인 사용자: 서버에서 로드
           const serverTheme = await fetchThemeSettings();
@@ -47,11 +61,14 @@ export function ThemeProvider({ children, user }: ThemeProviderProps) {
     };
 
     loadTheme();
-  }, [user]);
+  }, [user, isEmbedded]);
 
   const setTheme = useCallback(async (settings: Partial<ThemeSettings>) => {
     const newTheme = { ...theme, ...settings };
     setThemeState(newTheme);
+
+    // iframe 임베딩 시 데모 모드: 저장하지 않음
+    if (isEmbedded) return;
 
     if (user) {
       // 로그인 사용자: 서버에 저장
@@ -64,10 +81,10 @@ export function ThemeProvider({ children, user }: ThemeProviderProps) {
       // 비로그인: 로컬 스토리지에 저장
       setLocalThemeSettings(settings);
     }
-  }, [theme, user]);
+  }, [theme, user, isEmbedded]);
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, isLoading, isThemeModalOpen, setThemeModalOpen }}>
+    <ThemeContext.Provider value={{ theme, setTheme, isLoading, isThemeModalOpen, setThemeModalOpen, isEmbedded }}>
       {children}
     </ThemeContext.Provider>
   );

@@ -19,13 +19,7 @@ export function TypingArea({
     fontSize = 24,
     fontColor = "#374151",
 }: TypingAreaProps) {
-    const { isThemeModalOpen } = useTheme();
-
-    // iframe 내부인지 감지 (임베딩 시 자동 포커스 비활성화)
-    const [isEmbedded, setIsEmbedded] = useState(false);
-    useEffect(() => {
-        setIsEmbedded(window.self !== window.top);
-    }, []);
+    const { isThemeModalOpen, isEmbedded } = useTheme();
 
     // 줄바꿈을 공백으로 변환 (input 태그는 줄바꿈 입력 불가)
     const normalizeContent = (text: string) => text.replace(/\s+/g, ' ').trim();
