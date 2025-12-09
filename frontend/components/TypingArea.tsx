@@ -20,6 +20,13 @@ export function TypingArea({
     fontColor = "#374151",
 }: TypingAreaProps) {
     const { isThemeModalOpen } = useTheme();
+
+    // iframe 내부인지 감지 (임베딩 시 자동 포커스 비활성화)
+    const [isEmbedded, setIsEmbedded] = useState(false);
+    useEffect(() => {
+        setIsEmbedded(window.self !== window.top);
+    }, []);
+
     // 줄바꿈을 공백으로 변환 (input 태그는 줄바꿈 입력 불가)
     const normalizeContent = (text: string) => text.replace(/\s+/g, ' ').trim();
     const [input, setInput] = useState("");
@@ -97,19 +104,25 @@ export function TypingArea({
             clearTimeout(completionTimerRef.current);
             completionTimerRef.current = null;
         }
-        inputRef.current?.focus();
-    }, [initialContent]);
+        // iframe 임베딩 시에는 자동 포커스 비활성화
+        if (!isEmbedded) {
+            inputRef.current?.focus();
+        }
+    }, [initialContent, isEmbedded]);
 
-    // 페이지 로드 시 자동 포커스
+    // 페이지 로드 시 자동 포커스 (iframe 임베딩 시 비활성화)
     useEffect(() => {
+        if (isEmbedded) return;
         const timer = setTimeout(() => {
             inputRef.current?.focus();
         }, 0);
         return () => clearTimeout(timer);
-    }, []);
+    }, [isEmbedded]);
 
-    // 항상 포커스 유지: blur 시 재포커스, 윈도우 포커스 시 재포커스
+    // 항상 포커스 유지: blur 시 재포커스, 윈도우 포커스 시 재포커스 (iframe 임베딩 시 비활성화)
     useEffect(() => {
+        if (isEmbedded) return;
+
         const input = inputRef.current;
         if (!input) return;
 
@@ -159,7 +172,7 @@ export function TypingArea({
             window.removeEventListener('focus', handleWindowFocus);
             document.removeEventListener('keydown', handleGlobalKeyDown);
         };
-    }, [isThemeModalOpen]);
+    }, [isThemeModalOpen, isEmbedded]);
 
     // refs 준비 완료 후 커서 위치 초기화
     useLayoutEffect(() => {
@@ -440,7 +453,7 @@ export function TypingArea({
                 onCompositionStart={handleCompositionStart}
                 onCompositionEnd={handleCompositionEnd}
                 className="sr-only"
-                autoFocus
+                autoFocus={!isEmbedded}
             />
 
             <div className="text-sm text-muted-foreground mt-8">
