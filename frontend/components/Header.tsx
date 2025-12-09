@@ -15,7 +15,7 @@ interface HeaderProps {
 }
 
 export function Header({ initialProfile = null, onThemeClick }: HeaderProps) {
-  const { theme, isThemeModalOpen, setThemeModalOpen } = useTheme();
+  const { theme, isThemeModalOpen, setThemeModalOpen, isEmbedded } = useTheme();
   const [user, setUser] = useState<UserProfile | null>(initialProfile);
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -25,11 +25,14 @@ export function Header({ initialProfile = null, onThemeClick }: HeaderProps) {
   const isDarkBg = getColorBrightness(theme.backgroundColor) < 128;
 
   useEffect(() => {
+    // iframe 임베딩 시 데모 모드: API 호출하지 않음
+    if (isEmbedded) return;
+
     // 서버에서 프로필을 받지 못한 경우에만 클라이언트에서 로드
     if (!user) {
       getUserProfile().then(setUser);
     }
-  }, []);
+  }, [isEmbedded]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
