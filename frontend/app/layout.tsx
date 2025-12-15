@@ -46,7 +46,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/og-image.png",
+        url: "https://feel4.maesil.io/og-image.png",
         width: 1200,
         height: 630,
         alt: "필사 - 문학 작품 필사 앱",
@@ -57,7 +57,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "필사 - 소설, 시, 수필, 성경 필사 앱",
     description: "소설, 시, 수필, 성경을 필사하며 느끼는 감동. 타이핑으로 문학 작품을 필사하고 마음의 평화를 찾아보세요.",
-    images: ["/og-image.png"],
+    images: ["https://feel4.maesil.io/og-image.png"],
   },
   robots: {
     index: true,
