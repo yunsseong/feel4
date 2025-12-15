@@ -1,0 +1,25 @@
+# robots.txt for feel4.app
+# https://feel4.app
+
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://feel4.app/sitemap.xml
+
+# Disallow admin and API paths
+Disallow: /admin
+Disallow: /api
+
+# Allow search engine crawlers
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: NaverBot
+Allow: /
+
+User-agent: Yeti
+Allow: /

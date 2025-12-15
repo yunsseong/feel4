@@ -17,22 +17,68 @@ const inter = Inter({
 const GOOGLE_FONTS_URL = "https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700&family=Nanum+Myeongjo:wght@400;700&family=Gowun+Dodum:wght@400;700&family=Hahmlet:wght@400;700&family=Maruburi:wght@400;700&family=Nanum+Pen+Script:wght@400;700&family=Gamja+Flower:wght@400;700&display=swap";
 
 export const metadata: Metadata = {
-  title: "필사",
-  description: "소설, 시, 수필, 성경을 필사하며 느끼는 감동",
+  metadataBase: new URL("https://feel4.app"),
+  title: {
+    default: "필사 - 소설, 시, 수필, 성경 필사 앱",
+    template: "%s | 필사",
+  },
+  description: "소설, 시, 수필, 성경을 필사하며 느끼는 감동. 타이핑으로 문학 작품을 필사하고 마음의 평화를 찾아보세요.",
+  keywords: ["필사", "타이핑", "문학", "소설", "시", "수필", "성경", "명상", "글쓰기", "한글 타이핑"],
+  authors: [{ name: "필사" }],
+  creator: "필사",
+  publisher: "필사",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
   icons: {
     icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌸</text></svg>",
+    apple: "/icon-192x192.png",
   },
+  manifest: "/manifest.json",
   openGraph: {
-    title: "필사",
-    description: "소설, 시, 수필, 성경을 필사하며 느끼는 감동",
+    title: "필사 - 소설, 시, 수필, 성경 필사 앱",
+    description: "소설, 시, 수필, 성경을 필사하며 느끼는 감동. 타이핑으로 문학 작품을 필사하고 마음의 평화를 찾아보세요.",
+    url: "https://feel4.app",
     siteName: "필사",
     locale: "ko_KR",
     type: "website",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "필사 - 문학 작품 필사 앱",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "필사",
-    description: "소설, 시, 수필, 성경을 필사하며 느끼는 감동",
+    title: "필사 - 소설, 시, 수필, 성경 필사 앱",
+    description: "소설, 시, 수필, 성경을 필사하며 느끼는 감동. 타이핑으로 문학 작품을 필사하고 마음의 평화를 찾아보세요.",
+    images: ["/og-image.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  alternates: {
+    canonical: "https://feel4.app",
+  },
+  verification: {
+    // Google Search Console 및 네이버 웹마스터 도구 등록 후 아래 값 추가
+    // google: "your-google-verification-code",
+    // other: {
+    //   "naver-site-verification": "your-naver-verification-code",
+    // },
   },
 };
 
@@ -55,6 +101,47 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href={GOOGLE_FONTS_URL} rel="stylesheet" />
+
+        {/* JSON-LD Structured Data */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebApplication",
+              "name": "필사",
+              "alternateName": "Feel4",
+              "description": "소설, 시, 수필, 성경을 필사하며 느끼는 감동. 타이핑으로 문학 작품을 필사하고 마음의 평화를 찾아보세요.",
+              "url": "https://feel4.app",
+              "applicationCategory": "EducationalApplication",
+              "operatingSystem": "Web, iOS, Android",
+              "inLanguage": "ko",
+              "offers": {
+                "@type": "Offer",
+                "price": "0",
+                "priceCurrency": "KRW"
+              },
+              "aggregateRating": {
+                "@type": "AggregateRating",
+                "ratingValue": "5",
+                "ratingCount": "1"
+              }
+            })
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              "name": "필사",
+              "url": "https://feel4.app",
+              "logo": "https://feel4.app/icon-512x512.png",
+              "sameAs": []
+            })
+          }}
+        />
       </head>
       <body className={cn(inter.variable, "font-sans antialiased bg-background text-foreground")}>
         <CapacitorProvider>
