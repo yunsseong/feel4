@@ -6,10 +6,10 @@ export const metadata: Metadata = {
   openGraph: {
     title: "로그인 | 필사",
     description: "필사 앱에 로그인하여 필사 진행 상황을 저장하세요.",
-    url: "https://feel4.app/login",
+    url: "https://feel4.maesil.io/login/",
   },
   alternates: {
-    canonical: "https://feel4.app/login",
+    canonical: "https://feel4.maesil.io/login/",
   },
 };
 

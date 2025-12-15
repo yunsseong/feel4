@@ -17,7 +17,7 @@ const inter = Inter({
 const GOOGLE_FONTS_URL = "https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700&family=Nanum+Myeongjo:wght@400;700&family=Gowun+Dodum:wght@400;700&family=Hahmlet:wght@400;700&family=Maruburi:wght@400;700&family=Nanum+Pen+Script:wght@400;700&family=Gamja+Flower:wght@400;700&display=swap";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://feel4.app"),
+  metadataBase: new URL("https://feel4.maesil.io"),
   title: {
     default: "필사 - 소설, 시, 수필, 성경 필사 앱",
     template: "%s | 필사",
@@ -40,7 +40,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "필사 - 소설, 시, 수필, 성경 필사 앱",
     description: "소설, 시, 수필, 성경을 필사하며 느끼는 감동. 타이핑으로 문학 작품을 필사하고 마음의 평화를 찾아보세요.",
-    url: "https://feel4.app",
+    url: "https://feel4.maesil.io",
     siteName: "필사",
     locale: "ko_KR",
     type: "website",
@@ -71,7 +71,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: "https://feel4.app",
+    canonical: "https://feel4.maesil.io",
   },
   verification: {
     // Google Search Console 및 네이버 웹마스터 도구 등록 후 아래 값 추가
@@ -125,7 +125,7 @@ export default function RootLayout({
               "name": "필사",
               "alternateName": "Feel4",
               "description": "소설, 시, 수필, 성경을 필사하며 느끼는 감동. 타이핑으로 문학 작품을 필사하고 마음의 평화를 찾아보세요.",
-              "url": "https://feel4.app",
+              "url": "https://feel4.maesil.io",
               "applicationCategory": "EducationalApplication",
               "operatingSystem": "Web, iOS, Android",
               "inLanguage": "ko",
@@ -149,8 +149,8 @@ export default function RootLayout({
               "@context": "https://schema.org",
               "@type": "Organization",
               "name": "필사",
-              "url": "https://feel4.app",
-              "logo": "https://feel4.app/icon-512x512.png",
+              "url": "https://feel4.maesil.io",
+              "logo": "https://feel4.maesil.io/icon-512x512.png",
               "sameAs": []
             })
           }}

@@ -1,11 +1,11 @@
-# robots.txt for feel4.app
-# https://feel4.app
+# robots.txt for feel4.maesil.io
+# https://feel4.maesil.io
 
 User-agent: *
 Allow: /
 
 # Sitemap location
-Sitemap: https://feel4.app/sitemap.xml
+Sitemap: https://feel4.maesil.io/sitemap.xml
 
 # Disallow admin and API paths
 Disallow: /admin
